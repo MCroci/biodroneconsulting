@@ -107,7 +107,7 @@ const ScrollFlyingDrone: React.FC = () => {
   return (
     <motion.div
       style={{ x, opacity }}
-      className="fixed top-[28vh] left-1/2 -translate-x-1/2 z-30 pointer-events-none w-[240px] h-[180px]"
+      className="fixed top-[28vh] left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[240px] h-[180px]"
       aria-hidden="true"
     >
       <motion.div
@@ -353,7 +353,7 @@ export default function App() {
 
       {/* Perché il Drone? (Educational Section) */}
       <section id="drone" className="py-24 bg-transparent relative">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Divulgazione</span>
@@ -389,7 +389,7 @@ export default function App() {
 
       {/* Come Funziona (Interactive Workflow) */}
       <section id="workflow" className="py-24 bg-brand-dark text-white overflow-hidden">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
@@ -479,7 +479,7 @@ export default function App() {
         <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
         <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
 
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <FadeIn direction="left">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
@@ -555,7 +555,7 @@ export default function App() {
 
       {/* Divulgazione e Risultati */}
       <section id="risultati" className="py-24 bg-white">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
@@ -627,7 +627,7 @@ export default function App() {
 
       {/* Contatti */}
       <section id="contatti" className="py-24 bg-brand-bg">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
@@ -692,7 +692,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-brand-dark text-gray-400 py-12 border-t border-white/10">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4 group cursor-pointer w-fit">
