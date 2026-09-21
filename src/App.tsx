@@ -72,7 +72,8 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
  */
 const ScrollFlyingDrone: React.FC = () => {
   const [enabled, setEnabled] = useState(false);
-  const { scrollYProgress } = useScroll();
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  const { scrollY, scrollYProgress } = useScroll();
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -82,16 +83,24 @@ const ScrollFlyingDrone: React.FC = () => {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+
   const x = useTransform(
     scrollYProgress,
     [0, 0.16, 0.22, 0.42, 0.48, 0.68, 0.74, 0.9],
     ['0vw', '0vw', '-25vw', '-25vw', '24vw', '24vw', '-18vw', '-18vw']
   );
-  const opacity = useTransform(
-    scrollYProgress,
-    [0, 0.1, 0.16, 0.88, 0.94],
-    [0, 0, 1, 1, 0]
-  );
+  // The hero fills exactly one screen (see the hero section's lg:h-screen), so
+  // only start revealing the flying drone once we've scrolled a full screen
+  // past it — a fixed scroll-progress fraction would overlap the hero on
+  // shorter pages, showing two drones on screen at once.
+  const fadeInPastHero = useTransform(scrollY, [viewportHeight * 0.95, viewportHeight * 1.25], [0, 1]);
+  const fadeOutNearFooter = useTransform(scrollYProgress, [0.86, 0.94], [1, 0]);
+  const opacity = useTransform([fadeInPastHero, fadeOutNearFooter], ([a, b]: number[]) => a * b);
 
   if (!enabled) return null;
 
