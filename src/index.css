@@ -23,3 +23,49 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
   font-synthesis-weight: none;
 }
+
+/* Drone mouse cursor */
+.drone-cursor-active,
+.drone-cursor-active * {
+  cursor: none !important;
+}
+
+.drone-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  will-change: transform;
+}
+
+.drone-cursor svg {
+  position: absolute;
+  top: -23px;
+  left: -23px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.drone-cursor-visible {
+  opacity: 1;
+}
+
+.drone-cursor-prop {
+  transform-origin: center;
+  animation: drone-cursor-spin 0.5s linear infinite;
+}
+
+@keyframes drone-cursor-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drone-cursor-prop {
+    animation: none;
+  }
+}

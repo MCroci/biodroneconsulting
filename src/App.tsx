@@ -7,6 +7,7 @@ import {
   Info, AlertTriangle, Cookie
 } from 'lucide-react';
 import Hero3DBackground from './components/Hero3DBackground';
+import DroneCursor from './components/DroneCursor';
 
 const FadeIn: React.FC<{ children: React.ReactNode, delay?: number, className?: string, direction?: "up" | "left" | "right" }> = ({ children, delay = 0, className = "", direction = "up" }) => {
   const directions = {
@@ -109,6 +110,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
+      <DroneCursor />
+
       {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
         <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8">
