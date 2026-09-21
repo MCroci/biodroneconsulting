@@ -153,20 +153,68 @@ const DroneIcon = ({ className }: { className?: string }) => (
 const FieldLines = ({ className = "" }: { className?: string }) => {
   const apexX = 350, apexY = 610, topY = 90, maxSpreadX = 310, bow = 0.95, count = 7;
   const ctrlY = apexY - (apexY - topY) * 0.55;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+
   const lines = Array.from({ length: count }, (_, i) => {
     const frac = (i + 1) / count;
     return { endX: apexX + frac * maxSpreadX, ctrlX: apexX + frac * maxSpreadX * bow };
   });
 
+  const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setPointer({
+      x: ((e.clientX - rect.left) / rect.width) * 700,
+      y: ((e.clientY - rect.top) / rect.height) * 500,
+    });
+  };
+
+  // How far a point sways sideways, like a stalk of wheat leaning away from a
+  // hand brushed through it: falls off with distance from the pointer.
+  const sway = (px: number, py: number) => {
+    if (!pointer) return 0;
+    const dx = px - pointer.x;
+    const dy = py - pointer.y;
+    const dist = Math.hypot(dx, dy);
+    const radius = 280;
+    const influence = Math.max(0, 1 - dist / radius);
+    return (dx >= 0 ? 1 : -1) * influence * 70;
+  };
+
   return (
-    <svg viewBox="0 0 700 500" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
+    <svg
+      ref={svgRef}
+      viewBox="0 0 700 500"
+      preserveAspectRatio="xMidYMax slice"
+      className={className}
+      aria-hidden="true"
+      onMouseMove={handleMove}
+      onMouseLeave={() => setPointer(null)}
+    >
       <g fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        {lines.map(({ endX, ctrlX }, i) => (
-          <React.Fragment key={i}>
-            <path d={`M ${apexX} ${apexY} Q ${ctrlX} ${ctrlY} ${endX} ${topY}`} />
-            <path d={`M ${apexX} ${apexY} Q ${2 * apexX - ctrlX} ${ctrlY} ${2 * apexX - endX} ${topY}`} />
-          </React.Fragment>
-        ))}
+        {lines.map(({ endX, ctrlX }, i) => {
+          const midX = (apexX + endX) / 2;
+          const midY = (apexY + ctrlY) / 2;
+          const swayEnd = sway(endX, topY);
+          const swayCtrl = sway(midX, midY);
+          const endXl = 2 * apexX - endX;
+          const ctrlXl = 2 * apexX - ctrlX;
+          const swayEndL = sway(endXl, topY);
+          const swayCtrlL = sway(2 * apexX - midX, midY);
+          return (
+            <React.Fragment key={i}>
+              <path
+                d={`M ${apexX} ${apexY} Q ${ctrlX + swayCtrl} ${ctrlY} ${endX + swayEnd} ${topY}`}
+                style={{ transition: "d 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}
+              />
+              <path
+                d={`M ${apexX} ${apexY} Q ${ctrlXl + swayCtrlL} ${ctrlY} ${endXl + swayEndL} ${topY}`}
+                style={{ transition: "d 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}
+              />
+            </React.Fragment>
+          );
+        })}
       </g>
     </svg>
   );
@@ -454,7 +502,7 @@ export default function App() {
                   className="absolute inset-0 bg-gradient-to-br from-[#2B5219] via-[#60795A] to-[#15240D]"
                 >
                   <FieldLines className="absolute inset-0 w-full h-full text-white/15" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
                   
                   {/* Overlay UI based on step */}
                   <div className="absolute bottom-8 left-8 right-8">
