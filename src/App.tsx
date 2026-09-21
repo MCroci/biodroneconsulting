@@ -116,7 +116,7 @@ const ScrollFlyingDrone: React.FC = () => {
         className="relative w-full h-full"
       >
         <div className="absolute inset-0 bg-brand-light/10 rounded-full blur-3xl scale-125"></div>
-        <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
+        <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" environment={false} />
       </motion.div>
     </motion.div>
   );
