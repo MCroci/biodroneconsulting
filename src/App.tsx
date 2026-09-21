@@ -1,5 +1,5 @@
-import React, { useState, useEffect, ReactNode } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { 
   Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
@@ -36,6 +36,41 @@ const Floating: React.FC<{ children: React.ReactNode, delay?: number, duration?:
     {children}
   </motion.div>
 );
+
+/** Counts up from 0 to `to` once the number scrolls into view. */
+const CountUp: React.FC<{ to: number; duration?: number; suffix?: string }> = ({ to, duration = 1.4, suffix = "" }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!isInView) return;
+    let start: number | null = null;
+    let frame: number;
+    const step = (timestamp: number) => {
+      if (start === null) start = timestamp;
+      const progress = Math.min((timestamp - start) / (duration * 1000), 1);
+      setValue(Math.round(progress * to));
+      if (progress < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [isInView, to, duration]);
+
+  return <span ref={ref}>{value}{suffix}</span>;
+};
+
+/** Wraps children in a layer that drifts vertically as the page scrolls past it. */
+const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className?: string }> = ({ children, speed = 0.15, className = "" }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [`${-speed * 100}%`, `${speed * 100}%`]);
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
+};
 
 const DroneIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -287,7 +322,7 @@ export default function App() {
               { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]" }
             ].map((feature, idx) => (
               <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group h-full flex flex-col relative overflow-hidden">
+                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-brand-light/30 transition-all duration-300 group h-full flex flex-col relative overflow-hidden">
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform`}></div>
                   <div className={`${feature.color} ${feature.text} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                     <feature.icon className="h-7 w-7" />
@@ -390,8 +425,8 @@ export default function App() {
       {/* Il Progetto (Context) */}
       <section id="progetto" className="py-24 bg-brand-bg relative overflow-hidden">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></div>
+        <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
+        <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -402,7 +437,7 @@ export default function App() {
               </p>
               
               <div className="space-y-6 mt-8">
-                <div className="flex flex-col gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex flex-col gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                   <div className="flex items-start gap-4">
                     <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
                     <div>
@@ -414,10 +449,10 @@ export default function App() {
                     <img src="https://upload.wikimedia.org/wikipedia/it/thumb/a/a2/Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg/512px-Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg.png" alt="Università Cattolica del Sacro Cuore" className="h-10 object-contain" />
                   </div>
                 </div>
-                <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                   <div className="bg-brand-light/10 p-3 rounded-lg text-brand-light"><MapPin className="h-6 w-6" /></div>
                   <div>
-                    <h4 className="text-gray-900">50 Ettari di Sperimentazione</h4>
+                    <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
                   </div>
                 </div>
@@ -427,7 +462,7 @@ export default function App() {
             <FadeIn direction="right">
               <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative">
                 <div className="absolute -top-6 -right-6 bg-brand-accent text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shadow-lg transform rotate-12">
-                  <span className="text-2xl">30</span>
+                  <span className="text-2xl"><CountUp to={30} /></span>
                   <span className="text-xs uppercase">Mesi</span>
                 </div>
                 <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
@@ -483,7 +518,7 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
             <FadeIn delay={0.1}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
                 <FileText className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
                 <h3 className="text-xl mb-3">Linee Guida Pratiche</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
@@ -497,7 +532,7 @@ export default function App() {
 
             {/* Card 2 */}
             <FadeIn delay={0.2}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
                 <Presentation className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
                 <h3 className="text-xl mb-3">Eventi e Convegni</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
@@ -511,7 +546,7 @@ export default function App() {
 
             {/* Card 3 */}
             <FadeIn delay={0.3}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
                 <BookOpen className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
                 <h3 className="text-xl mb-3">Pubblicazioni Scientifiche</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
@@ -545,7 +580,7 @@ export default function App() {
           <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+                <Parallax speed={0.25} className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></Parallax>
                 
                 <h2 className="text-3xl md:text-4xl font-heading mb-6 relative z-10">Resta Aggiornato</h2>
                 <p className="text-gray-300 mb-10 text-lg relative z-10">
