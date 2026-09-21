@@ -262,7 +262,7 @@ export default function App() {
   ];
 
   const workflowSteps = [
-    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
+    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light" },
     { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
     { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
     { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
