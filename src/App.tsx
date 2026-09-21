@@ -237,10 +237,10 @@ export default function App() {
         </AnimatePresence>
       </nav>
 
-      {/* Styled Hero Section Container */}
-      <section className="bg-white w-full pt-32 lg:pt-36 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
-        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-24">
-          <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[75vh] flex items-center px-8 py-16 lg:px-24 overflow-hidden relative">
+      {/* Styled Hero Section Container — fills exactly one screen from desktop up */}
+      <section className="bg-white w-full pt-28 lg:pt-32 pb-10 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:justify-center rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
+        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[70vh] lg:min-h-0 flex items-center px-8 py-12 lg:px-24 lg:py-10 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full z-10 relative">
               
               {/* Text Content */}
@@ -277,7 +277,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1 }}
-                className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
+                className="relative h-[380px] lg:h-[min(46vh,480px)] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
               >
                  <div className="absolute inset-0 bg-brand-light/5 rounded-full blur-3xl transform scale-150"></div>
                  <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
