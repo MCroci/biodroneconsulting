@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #1E352F;
-  --color-brand-light: #57A773;
-  --color-brand-accent: #FF7538;
+  --color-brand-dark: #15240D;
+  --color-brand-light: #60795A;
+  --color-brand-accent: #2B5219;
   --color-brand-bg: #FAF8F2;
   --color-brand-outer-bg: #EAEBE5;
   --color-brand-text: #2D3330;
-  --font-heading: "Lora", serif;
+  --font-heading: "Marcellus", serif;
   --font-body: 'Inter', sans-serif;
 }
 
@@ -20,4 +20,52 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+  font-weight: 400;
+  font-synthesis-weight: none;
+}
+
+/* Drone mouse cursor */
+.drone-cursor-active,
+.drone-cursor-active * {
+  cursor: none !important;
+}
+
+.drone-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  will-change: transform;
+}
+
+.drone-cursor svg {
+  position: absolute;
+  top: -23px;
+  left: -23px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.drone-cursor-visible {
+  opacity: 1;
+}
+
+.drone-cursor-prop {
+  transform-origin: center;
+  animation: drone-cursor-spin 0.5s linear infinite;
+}
+
+@keyframes drone-cursor-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drone-cursor-prop {
+    animation: none;
+  }
 }
