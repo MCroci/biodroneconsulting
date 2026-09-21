@@ -28,15 +28,6 @@ const FadeIn: React.FC<{ children: React.ReactNode, delay?: number, className?: 
   );
 };
 
-const Floating: React.FC<{ children: React.ReactNode, delay?: number, duration?: number }> = ({ children, delay = 0, duration = 4 }) => (
-  <motion.div
-    animate={{ y: [0, -15, 0] }}
-    transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
-  >
-    {children}
-  </motion.div>
-);
-
 /** Counts up from 0 to `to` once the number scrolls into view. */
 const CountUp: React.FC<{ to: number; duration?: number; suffix?: string }> = ({ to, duration = 1.4, suffix = "" }) => {
   const ref = useRef<HTMLSpanElement>(null);
@@ -110,12 +101,14 @@ const ScrollFlyingDrone: React.FC = () => {
       className="fixed top-[28vh] left-1/2 -translate-x-1/2 z-30 pointer-events-none w-[240px] h-[180px]"
       aria-hidden="true"
     >
-      <Floating duration={5}>
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0 bg-brand-light/10 rounded-full blur-3xl scale-125"></div>
-          <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
-        </div>
-      </Floating>
+      <motion.div
+        animate={{ y: [0, -15, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className="relative w-full h-full"
+      >
+        <div className="absolute inset-0 bg-brand-light/10 rounded-full blur-3xl scale-125"></div>
+        <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
+      </motion.div>
     </motion.div>
   );
 };
