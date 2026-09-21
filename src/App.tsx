@@ -176,7 +176,7 @@ export default function App() {
 
       {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
-        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             
             {/* Logo */}
@@ -239,7 +239,7 @@ export default function App() {
 
       {/* Styled Hero Section Container — fills exactly one screen from desktop up */}
       <section className="bg-white w-full pt-28 lg:pt-32 pb-10 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:justify-center rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
-        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[70vh] lg:min-h-0 flex items-center px-8 py-12 lg:px-24 lg:py-10 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full z-10 relative">
               
@@ -302,7 +302,7 @@ export default function App() {
 
       {/* Perché il Drone? (Educational Section) */}
       <section id="drone" className="py-24 bg-transparent relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
               <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Divulgazione</span>
@@ -338,7 +338,7 @@ export default function App() {
 
       {/* Come Funziona (Interactive Workflow) */}
       <section id="workflow" className="py-24 bg-brand-dark text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
@@ -428,7 +428,7 @@ export default function App() {
         <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
         <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <FadeIn direction="left">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
@@ -504,7 +504,7 @@ export default function App() {
 
       {/* Divulgazione e Risultati */}
       <section id="risultati" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
@@ -576,7 +576,7 @@ export default function App() {
 
       {/* Contatti */}
       <section id="contatti" className="py-24 bg-brand-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
@@ -641,7 +641,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-brand-dark text-gray-400 py-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4 group cursor-pointer w-fit">
