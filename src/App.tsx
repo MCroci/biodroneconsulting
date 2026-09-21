@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
-  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, Cpu, Wifi, CheckCircle2,
+  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, Cpu, CheckCircle2,
   Info, AlertTriangle, Cookie
 } from 'lucide-react';
 import Hero3DBackground from './components/Hero3DBackground';
@@ -116,27 +116,11 @@ export default function App() {
             
             {/* Logo */}
             <a href="#" className="flex items-center gap-2 group text-brand-dark cursor-pointer">
-              <div className="relative flex-shrink-0 z-10">
-                <DroneIcon className="h-8 w-8 text-brand-light transform group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500 ease-out" />
-                <Wifi className="h-4 w-4 text-brand-accent absolute -top-1 -right-2 opacity-0 group-hover:opacity-100 animate-pulse transition-opacity duration-300" />
-              </div>
-              
-              <div className="flex items-baseline font-heading tracking-tight text-brand-dark">
-                <div className="flex">
-                  <span className="font-bold text-2xl lg:text-3xl transition-colors duration-300">B</span>
-                  <span className="text-xl lg:text-2xl transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[50px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-4">io</span>
-                </div>
-                
-                <div className="flex text-brand-light group-hover:text-brand-dark transition-colors duration-300">
-                  <span className="font-bold text-2xl lg:text-3xl">D</span>
-                  <span className="text-xl lg:text-2xl text-brand-dark transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[80px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-4">rone</span>
-                </div>
-                
-                <div className="flex items-baseline text-brand-accent group-hover:text-brand-dark transition-colors duration-300">
-                  <span className="font-bold text-2xl lg:text-3xl">C</span>
-                  <span className="font-sans font-bold text-[1.1rem] lg:text-[1.3rem] tracking-normal text-brand-text transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[150px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-4">onsulting</span>
-                </div>
-              </div>
+              <img
+                src="/logo-biodrone-trasparente.png"
+                alt="BioDroneConsulting"
+                className="h-[72px] w-auto transform group-hover:scale-105 transition-transform duration-500 ease-out"
+              />
             </a>
             
             {/* Desktop Nav */}
@@ -212,7 +196,7 @@ export default function App() {
                   Scopri come l'uso dei droni multispettrali sta rivoluzionando l'agricoltura: meno chimica, più precisione, zero sprechi.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <a href="#drone" className="inline-flex items-center justify-center px-8 py-3.5 text-[15px] font-semibold rounded-full text-white bg-brand-accent hover:bg-[#e0622a] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                  <a href="#drone" className="inline-flex items-center justify-center px-8 py-3.5 text-[15px] font-semibold rounded-full text-white bg-brand-accent hover:bg-brand-dark transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     Scopri i Vantaggi
                     <ChevronRight className="ml-2 -mr-1 h-4 w-4" />
                   </a>
@@ -231,7 +215,7 @@ export default function App() {
                 className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
               >
                  <div className="absolute inset-0 bg-brand-light/5 rounded-full blur-3xl transform scale-150"></div>
-                 <Hero3DBackground droneBodyColor="#1E352F" dronePropColor="#57A773" droneArmColor="#A0AEC0" />
+                 <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
               </motion.div>
 
             </div>
@@ -511,7 +495,7 @@ export default function App() {
 
           {/* Alert Box Divulgativo */}
           <FadeIn delay={0.4}>
-            <div className="mt-12 bg-orange-50 border-l-4 border-brand-accent p-6 rounded-r-xl flex items-start gap-4">
+            <div className="mt-12 bg-green-50 border-l-4 border-brand-accent p-6 rounded-r-xl flex items-start gap-4">
               <Info className="h-6 w-6 text-brand-accent flex-shrink-0 mt-1" />
               <div>
                 <h4 className="font-bold text-gray-900 text-lg">Lo sapevi che?</h4>
@@ -579,7 +563,7 @@ export default function App() {
                     <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">Email</label>
                     <input type="email" id="email" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-light focus:border-transparent outline-none transition-all" placeholder="mario@example.com" />
                   </div>
-                  <button type="submit" className="w-full bg-brand-accent hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                  <button type="submit" className="w-full bg-brand-accent hover:bg-brand-dark text-white font-bold py-4 px-4 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
                     Richiedi Informazioni
                   </button>
                 </form>
@@ -595,21 +579,11 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4 group cursor-pointer w-fit">
-                <DroneIcon className="h-6 w-6 text-brand-light transform group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-500" />
-                <div className="flex items-baseline font-heading tracking-tight text-white/90">
-                  <div className="flex group-hover:text-white transition-colors duration-300">
-                    <span className="font-bold text-xl">B</span>
-                    <span className="text-lg transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[50px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-2">io</span>
-                  </div>
-                  <div className="flex text-brand-light group-hover:text-white transition-colors duration-300">
-                    <span className="font-bold text-xl">D</span>
-                    <span className="text-lg text-white/90 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[80px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-2">rone</span>
-                  </div>
-                  <div className="flex items-baseline text-brand-accent group-hover:text-white transition-colors duration-300">
-                    <span className="font-bold text-xl">C</span>
-                    <span className="font-sans font-bold text-sm tracking-normal text-white/70 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap max-w-[100px] group-hover:max-w-0 group-hover:opacity-0 group-hover:-translate-x-2">onsulting</span>
-                  </div>
-                </div>
+                <img
+                  src="/logo-biodrone-bianco.png"
+                  alt="BioDroneConsulting"
+                  className="h-14 w-auto transform group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
               <p className="text-sm">Divulgazione e innovazione per l'agricoltura sostenibile in Lombardia tramite tecnologie UAV e satellitari.</p>
             </div>
@@ -666,7 +640,7 @@ export default function App() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleCookieConsent(true)}
-                    className="flex-1 bg-brand-accent hover:bg-[#e0622a] text-white text-[13px] font-bold py-2.5 px-4 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5"
+                    className="flex-1 bg-brand-accent hover:bg-brand-dark text-white text-[13px] font-bold py-2.5 px-4 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5"
                   >
                     Accetta
                   </button>
