@@ -119,7 +119,7 @@ export default function App() {
               <img
                 src="/logo-biodrone-trasparente.png"
                 alt="BioDroneConsulting"
-                className="h-[72px] w-auto transform group-hover:scale-105 transition-transform duration-500 ease-out"
+                className="h-[100px] w-auto transform group-hover:scale-105 transition-transform duration-500 ease-out"
               />
             </a>
             
@@ -241,7 +241,7 @@ export default function App() {
           <FadeIn>
             <div className="text-center mb-16">
               <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Divulgazione</span>
-              <h2 className="text-3xl md:text-5xl font-heading font-bold text-brand-dark mt-2">Perché usare il Drone?</h2>
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mt-2">Perché usare il Drone?</h2>
               <div className="w-24 h-1 bg-brand-light mx-auto mt-6 rounded-full"></div>
               <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">
                 Il drone non è solo una telecamera volante. È uno strumento diagnostico e operativo che cambia radicalmente il modo in cui curiamo le colture.
@@ -251,10 +251,10 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-blue-50", text: "text-blue-600" },
-              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-green-50", text: "text-green-600" },
-              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-orange-50", text: "text-orange-600" },
-              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-purple-50", text: "text-purple-600" }
+              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]" },
+              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]" },
+              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]" },
+              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]" }
             ].map((feature, idx) => (
               <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
                 <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group h-full flex flex-col relative overflow-hidden">
@@ -262,7 +262,7 @@ export default function App() {
                   <div className={`${feature.color} ${feature.text} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                     <feature.icon className="h-7 w-7" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                  <h3 className="text-xl text-gray-900 mb-3">{feature.title}</h3>
                   <p className="text-gray-600 flex-1">{feature.desc}</p>
                 </div>
               </FadeIn>
@@ -276,7 +276,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6">Il Flusso Operativo</h2>
+              <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
               <p className="text-lg text-gray-300 max-w-2xl mx-auto">
                 Dallo spazio al singolo filo d'erba: ecco come i dati si trasformano in azione.
               </p>
@@ -305,7 +305,7 @@ export default function App() {
                       <step.icon className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className={`font-bold text-xl ${activeWorkflowStep === idx ? 'text-white' : 'text-gray-400'}`}>
+                      <h3 className={`text-xl ${activeWorkflowStep === idx ? 'text-white' : 'text-gray-400'}`}>
                         {step.title}
                       </h3>
                     </div>
@@ -335,7 +335,7 @@ export default function App() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="absolute inset-0 bg-gray-800"
+                  className="absolute inset-0 bg-gradient-to-br from-[#2B5219] via-[#60795A] to-[#15240D]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   
@@ -346,7 +346,7 @@ export default function App() {
                         <div className={`w-3 h-3 rounded-full ${workflowSteps[activeWorkflowStep].bg} animate-pulse`}></div>
                         <span className="font-mono text-sm text-brand-light tracking-wider uppercase">Fase Attiva</span>
                       </div>
-                      <h4 className="text-2xl font-bold text-white">{workflowSteps[activeWorkflowStep].title}</h4>
+                      <h4 className="text-2xl text-white">{workflowSteps[activeWorkflowStep].title}</h4>
                     </div>
                   </div>
                 </motion.div>
@@ -365,7 +365,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <FadeIn direction="left">
-              <h2 className="text-3xl md:text-5xl font-heading font-bold text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
               <p className="text-lg text-gray-700 mb-6">
                 Finanziato da <strong>Regione Lombardia (PEI AGRI SRG01)</strong>, il progetto unisce ricerca scientifica e pratica agricola per dimostrare la fattibilità economica e ambientale delle nuove tecnologie.
               </p>
@@ -375,7 +375,7 @@ export default function App() {
                   <div className="flex items-start gap-4">
                     <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
                     <div>
-                      <h4 className="font-bold text-gray-900">Partnership d'Eccellenza</h4>
+                      <h4 className="text-gray-900">Partnership d'Eccellenza</h4>
                       <p className="text-sm text-gray-600 mt-1">Farm Consulting (Capofila), UCSC DI.PRO.VE.S (Ricerca), CITIMAP (Tecnologia) e 6 aziende agricole lombarde.</p>
                     </div>
                   </div>
@@ -386,7 +386,7 @@ export default function App() {
                 <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                   <div className="bg-brand-light/10 p-3 rounded-lg text-brand-light"><MapPin className="h-6 w-6" /></div>
                   <div>
-                    <h4 className="font-bold text-gray-900">50 Ettari di Sperimentazione</h4>
+                    <h4 className="text-gray-900">50 Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
                   </div>
                 </div>
@@ -399,7 +399,7 @@ export default function App() {
                   <span className="text-2xl">30</span>
                   <span className="text-xs uppercase">Mesi</span>
                 </div>
-                <h3 className="text-2xl font-bold text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
+                <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
@@ -441,7 +441,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-heading font-bold text-brand-dark">Materiale Divulgativo</h2>
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
               <div className="w-24 h-1 bg-brand-accent mx-auto mt-6 rounded-full"></div>
               <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
                 Condividiamo apertamente i risultati del progetto per favorire l'adozione di queste tecnologie da parte di agricoltori e consulenti.
@@ -454,7 +454,7 @@ export default function App() {
             <FadeIn delay={0.1}>
               <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
                 <FileText className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl font-bold mb-3">Linee Guida Pratiche</h3>
+                <h3 className="text-xl mb-3">Linee Guida Pratiche</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Manuale operativo per l'integrazione di dati satellitari e droni nella gestione del mais e del riso.
                 </p>
@@ -468,7 +468,7 @@ export default function App() {
             <FadeIn delay={0.2}>
               <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
                 <Presentation className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl font-bold mb-3">Eventi e Convegni</h3>
+                <h3 className="text-xl mb-3">Eventi e Convegni</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Partecipazione a fiere di settore (SIA) e incontri in campo con i Gruppi Operativi per mostrare il drone in azione.
                 </p>
@@ -482,7 +482,7 @@ export default function App() {
             <FadeIn delay={0.3}>
               <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white transition-colors duration-300">
                 <BookOpen className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl font-bold mb-3">Pubblicazioni Scientifiche</h3>
+                <h3 className="text-xl mb-3">Pubblicazioni Scientifiche</h3>
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Articoli peer-reviewed sui risultati agronomici ed economici dell'uso dei biostimolanti a rateo variabile.
                 </p>
@@ -498,7 +498,7 @@ export default function App() {
             <div className="mt-12 bg-green-50 border-l-4 border-brand-accent p-6 rounded-r-xl flex items-start gap-4">
               <Info className="h-6 w-6 text-brand-accent flex-shrink-0 mt-1" />
               <div>
-                <h4 className="font-bold text-gray-900 text-lg">Lo sapevi che?</h4>
+                <h4 className="text-gray-900 text-lg">Lo sapevi che?</h4>
                 <p className="text-gray-700 mt-1">
                   Un drone agricolo moderno può mappare fino a 50 ettari in un solo volo di 30 minuti, fornendo dati con una precisione di 2 cm/pixel, impossibili da ottenere con i soli satelliti.
                 </p>
@@ -516,7 +516,7 @@ export default function App() {
               <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
                 
-                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6 relative z-10">Resta Aggiornato</h2>
+                <h2 className="text-3xl md:text-4xl font-heading mb-6 relative z-10">Resta Aggiornato</h2>
                 <p className="text-gray-300 mb-10 text-lg relative z-10">
                   Sei un agricoltore o un consulente? Iscriviti per ricevere i materiali divulgativi e gli inviti alle prove in campo con i droni.
                 </p>
@@ -527,7 +527,7 @@ export default function App() {
                       <Users className="h-6 w-6 text-brand-light" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg">Coordinamento</h4>
+                      <h4 className="text-lg">Coordinamento</h4>
                       <p className="text-gray-400">Farm Consulting srl</p>
                     </div>
                   </div>
@@ -537,7 +537,7 @@ export default function App() {
                       <Mail className="h-6 w-6 text-brand-light" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg">Email Progetto</h4>
+                      <h4 className="text-lg">Email Progetto</h4>
                       <a href="mailto:info@biodroneconsulting.it" className="text-gray-400 hover:text-white transition-colors">info@biodroneconsulting.it</a>
                     </div>
                   </div>
@@ -574,7 +574,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+      <footer className="bg-brand-dark text-gray-400 py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -588,14 +588,14 @@ export default function App() {
               <p className="text-sm">Divulgazione e innovazione per l'agricoltura sostenibile in Lombardia tramite tecnologie UAV e satellitari.</p>
             </div>
             <div>
-              <h4 className="text-white font-bold mb-4">Finanziamento</h4>
+              <h4 className="text-white mb-4">Finanziamento</h4>
               <p className="text-sm">
                 Progetto finanziato nell'ambito del PEI AGRI SRG01<br/>
                 Regione Lombardia (2026-2028)
               </p>
             </div>
             <div>
-              <h4 className="text-white font-bold mb-4">Link Rapidi</h4>
+              <h4 className="text-white mb-4">Link Rapidi</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="#drone" className="hover:text-white transition-colors">Perché il Drone</a></li>
                 <li><a href="#workflow" className="hover:text-white transition-colors">Come Funziona</a></li>
@@ -604,7 +604,7 @@ export default function App() {
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-bold mb-4">Partner Scientifico</h4>
+              <h4 className="text-white mb-4">Partner Scientifico</h4>
               <div className="bg-white p-3 rounded-lg w-fit">
                 <img src="https://upload.wikimedia.org/wikipedia/it/thumb/a/a2/Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg/512px-Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg.png" alt="Università Cattolica del Sacro Cuore" className="h-10 object-contain" />
               </div>
@@ -633,7 +633,7 @@ export default function App() {
                 <Cookie className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-2">Informativa sui Cookie</h3>
+                <h3 className="text-gray-900 mb-2">Informativa sui Cookie</h3>
                 <p className="text-sm text-gray-600 mb-5 leading-relaxed">
                   Utilizziamo i cookie per offrirti la migliore esperienza sul nostro sito. Scopri di più nella nostra policy o scegli le tue preferenze.
                 </p>
