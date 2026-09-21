@@ -72,6 +72,54 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
   );
 };
 
+/**
+ * A small drone that detaches once past the hero and flies alongside
+ * the page: it swings left, then right, then left again as you scroll
+ * down, and retraces the exact same path scrolling back up (it's a
+ * pure function of scroll position). Desktop only — a fixed 3D canvas
+ * chasing the cursor on a narrow phone screen would just get in the way.
+ */
+const ScrollFlyingDrone: React.FC = () => {
+  const [enabled, setEnabled] = useState(false);
+  const { scrollYProgress } = useScroll();
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    setEnabled(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setEnabled(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const x = useTransform(
+    scrollYProgress,
+    [0, 0.16, 0.22, 0.42, 0.48, 0.68, 0.74, 0.9],
+    ['0vw', '0vw', '-25vw', '-25vw', '24vw', '24vw', '-18vw', '-18vw']
+  );
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.1, 0.16, 0.88, 0.94],
+    [0, 0, 1, 1, 0]
+  );
+
+  if (!enabled) return null;
+
+  return (
+    <motion.div
+      style={{ x, opacity }}
+      className="fixed top-[28vh] left-1/2 -translate-x-1/2 z-30 pointer-events-none w-[240px] h-[180px]"
+      aria-hidden="true"
+    >
+      <Floating duration={5}>
+        <div className="relative w-full h-full">
+          <div className="absolute inset-0 bg-brand-light/10 rounded-full blur-3xl scale-125"></div>
+          <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
+        </div>
+      </Floating>
+    </motion.div>
+  );
+};
+
 const DroneIcon = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -173,6 +221,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
       <DroneCursor />
+      <ScrollFlyingDrone />
 
       {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
