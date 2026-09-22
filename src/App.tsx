@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { 
   Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
@@ -173,14 +173,17 @@ const AnimatedCostValue: React.FC<{ from: number; to: number }> = ({ from, to })
 };
 
 /** Icon badge that plays a distinct one-shot animation (per `pulse` type) each time `pulseKey` increases. */
-const DroneModelIcon: React.FC<{
+const PulseIcon: React.FC<{
   icon: React.ComponentType<{ className?: string }>;
   colorClass: string;
   bgSoftClass: string;
-  pulse: 'flash' | 'flicker' | 'drip';
+  pulse: 'flash' | 'flicker' | 'drip' | 'lock' | 'grow';
   pulseKey: number;
-}> = ({ icon: Icon, colorClass, bgSoftClass, pulse, pulseKey }) => (
-  <div className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${bgSoftClass}`}>
+  boxClassName?: string;
+  iconClassName?: string;
+  accentColor?: string;
+}> = ({ icon: Icon, colorClass, bgSoftClass, pulse, pulseKey, boxClassName = "h-8 w-8 rounded-full", iconClassName = "h-4 w-4", accentColor = "#ffffff" }) => (
+  <div className={`relative flex flex-shrink-0 items-center justify-center ${boxClassName} ${bgSoftClass}`}>
     <motion.div
       key={`iconmove-${pulseKey}`}
       animate={
@@ -190,11 +193,15 @@ const DroneModelIcon: React.FC<{
           ? { x: [0, -3, 3, -3, 3, 0], rotate: [0, -14, 14, -10, 10, 0] }
           : pulse === 'drip'
           ? { y: [0, 4, 0] }
+          : pulse === 'grow'
+          ? { scale: [1, 1.35, 1], y: [0, -3, 0] }
+          : pulse === 'lock'
+          ? { scale: [1, 0.85, 1] }
           : {}
       }
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
-      <Icon className={`h-4 w-4 ${colorClass}`} />
+      <Icon className={`${iconClassName} ${colorClass}`} />
     </motion.div>
     <AnimatePresence>
       {pulseKey > 0 && pulse === 'flash' && (
@@ -203,7 +210,8 @@ const DroneModelIcon: React.FC<{
           initial={{ opacity: 0.9, scale: 0.6 }}
           animate={{ opacity: 0, scale: 1.7 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="absolute inset-0 rounded-full bg-white pointer-events-none"
+          style={{ backgroundColor: accentColor }}
+          className="absolute inset-0 rounded-full pointer-events-none"
         />
       )}
       {pulseKey > 0 && pulse === 'flicker' && (
@@ -212,7 +220,8 @@ const DroneModelIcon: React.FC<{
           initial={{ opacity: 0.9, scale: 0.9 }}
           animate={{ opacity: 0, scale: 2.8 }}
           transition={{ duration: 0.65, ease: "easeOut" }}
-          className="absolute inset-0 rounded-full border-2 border-white pointer-events-none"
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
         />
       )}
       {pulseKey > 0 && pulse === 'flicker' && (
@@ -221,7 +230,8 @@ const DroneModelIcon: React.FC<{
           initial={{ opacity: 0.7, scale: 0.9 }}
           animate={{ opacity: 0, scale: 3.8 }}
           transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
-          className="absolute inset-0 rounded-full border-2 border-white pointer-events-none"
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
         />
       )}
       {pulseKey > 0 && pulse === 'flicker' && (
@@ -230,7 +240,8 @@ const DroneModelIcon: React.FC<{
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0, 1, 0] }}
           transition={{ duration: 0.5, times: [0, 0.25, 0.5, 0.75, 1] }}
-          className="absolute -inset-2 rounded-full bg-white/60 blur-[2px] pointer-events-none"
+          style={{ backgroundColor: accentColor }}
+          className="absolute -inset-2 rounded-full opacity-60 blur-[2px] pointer-events-none"
         />
       )}
       {pulseKey > 0 && pulse === 'drip' && [-10, -4, 4, 10].map((xOff, i) => (
@@ -239,9 +250,40 @@ const DroneModelIcon: React.FC<{
           initial={{ opacity: 1, x: 0, y: 0, scale: 1.3 }}
           animate={{ opacity: 0, x: xOff, y: 30 + i * 3, scale: 0.5 }}
           transition={{ duration: 0.85, delay: i * 0.08, ease: "easeIn" }}
-          className="absolute top-1/2 left-1/2 -ml-[4px] -mt-[4px] h-2 w-2 rounded-full bg-white shadow-[0_0_4px_rgba(255,255,255,0.8)] pointer-events-none"
+          style={{ backgroundColor: accentColor }}
+          className="absolute top-1/2 left-1/2 -ml-[4px] -mt-[4px] h-2 w-2 rounded-full shadow-[0_0_4px_rgba(0,0,0,0.25)] pointer-events-none"
         />
       ))}
+      {pulseKey > 0 && pulse === 'lock' && (
+        <motion.span
+          key={`lockring1-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 1.9 }}
+          animate={{ opacity: 0, scale: 0.85 }}
+          transition={{ duration: 0.5, ease: "easeIn" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'lock' && (
+        <motion.span
+          key={`lockring2-${pulseKey}`}
+          initial={{ opacity: 0.6, scale: 2.6 }}
+          animate={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.12, ease: "easeIn" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'grow' && (
+        <motion.span
+          key={`growring-${pulseKey}`}
+          initial={{ opacity: 0.7, scale: 0.8 }}
+          animate={{ opacity: 0, scale: 2.3 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
     </AnimatePresence>
   </div>
 );
@@ -329,6 +371,11 @@ export default function App() {
   const [selectedDroneModel, setSelectedDroneModel] = useState<string | null>(null);
   const [dronePulseKeys, setDronePulseKeys] = useState<Record<string, number>>({});
   const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const workflowStepsContainerRef = useRef<HTMLDivElement>(null);
+  const workflowIconRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [workflowIconCenters, setWorkflowIconCenters] = useState<number[]>([]);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  const [featurePulseKeys, setFeaturePulseKeys] = useState<Record<number, number>>({});
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -359,6 +406,28 @@ export default function App() {
 
   useEffect(() => {
     setSelectedDroneModel(null);
+  }, [activeWorkflowStep]);
+
+  useLayoutEffect(() => {
+    const container = workflowStepsContainerRef.current;
+    if (!container) return;
+    const measure = () => {
+      const containerTop = container.getBoundingClientRect().top;
+      const centers = workflowIconRefs.current.map((el) => {
+        if (!el) return 0;
+        const rect = el.getBoundingClientRect();
+        return rect.top - containerTop + rect.height / 2;
+      });
+      setWorkflowIconCenters(centers);
+    };
+    measure();
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(container);
+    window.addEventListener('resize', measure);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, [activeWorkflowStep]);
 
   const navLinks = [
@@ -533,22 +602,52 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]" },
-              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]" },
-              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]" },
-              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]" }
-            ].map((feature, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-brand-light/30 transition-all duration-300 group h-full flex flex-col relative overflow-hidden">
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform`}></div>
-                  <div className={`${feature.color} ${feature.text} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                    <feature.icon className="h-7 w-7" />
+              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]", hex: "#2B5219", pulse: 'lock' as const, detail: "Le zone di intervento derivano dalla zonizzazione k-Means sulle mappe NDVI (WP2)." },
+              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]", hex: "#60795A", pulse: 'grow' as const, detail: "Il suolo resta intatto, condizione ideale per il Ground-Truthing a terra." },
+              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]", hex: "#15240D", pulse: 'flicker' as const, detail: "Nessuna finestra di trattamento persa per pioggia o terreno molle." },
+              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]", hex: "#2B5219", pulse: 'drip' as const, detail: "Stessa logica di applicazione mirata validata nei Protocolli DSS (WP5)." }
+            ].map((feature, idx) => {
+              const isSelected = selectedFeature === idx;
+              return (
+                <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
+                  <div
+                    onClick={() => {
+                      setSelectedFeature(isSelected ? null : idx);
+                      setFeaturePulseKeys((prev) => ({ ...prev, [idx]: (prev[idx] || 0) + 1 }));
+                    }}
+                    className={`bg-white p-8 rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full flex flex-col relative overflow-hidden cursor-pointer ${
+                      isSelected ? 'border-brand-light shadow-xl -translate-y-2' : 'border-gray-100 hover:border-brand-light/30'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                    <PulseIcon
+                      icon={feature.icon}
+                      colorClass={feature.text}
+                      bgSoftClass={feature.color}
+                      pulse={feature.pulse}
+                      pulseKey={featurePulseKeys[idx] || 0}
+                      accentColor={feature.hex}
+                      boxClassName="w-14 h-14 rounded-xl mb-6 group-hover:scale-110 transition-transform"
+                      iconClassName="h-7 w-7"
+                    />
+                    <h3 className="text-xl text-gray-900 mb-3">{feature.title}</h3>
+                    <p className="text-gray-600 flex-1">{feature.desc}</p>
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <p className={`mt-4 pt-4 border-t border-gray-100 text-sm ${feature.text}`}>{feature.detail}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <h3 className="text-xl text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 flex-1">{feature.desc}</p>
-                </div>
-              </FadeIn>
-            ))}
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -571,19 +670,36 @@ export default function App() {
             onMouseLeave={() => setIsHoveringWorkflow(false)}
           >
             {/* Steps Navigation */}
-            <div className="lg:col-span-5 space-y-4">
+            <div className="lg:col-span-5 space-y-4 relative" ref={workflowStepsContainerRef}>
+              {workflowIconCenters.length === workflowSteps.length && (
+                <>
+                  <div
+                    className="hidden lg:block absolute left-12 w-0.5 bg-white/10 rounded-full"
+                    style={{ top: workflowIconCenters[0], height: workflowIconCenters[workflowIconCenters.length - 1] - workflowIconCenters[0] }}
+                  />
+                  <motion.div
+                    className="hidden lg:block absolute left-12 w-0.5 bg-brand-light rounded-full"
+                    style={{ top: workflowIconCenters[0] }}
+                    animate={{ height: workflowIconCenters[activeWorkflowStep] - workflowIconCenters[0] }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  />
+                </>
+              )}
               {workflowSteps.map((step, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => setActiveWorkflowStep(idx)}
                   className={`cursor-pointer p-6 rounded-2xl transition-all duration-300 border-2 ${
-                    activeWorkflowStep === idx 
-                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2' 
+                    activeWorkflowStep === idx
+                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2'
                       : 'bg-transparent border-transparent hover:bg-white/5'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}>
+                    <div
+                      ref={(el) => { workflowIconRefs.current[idx] = el; }}
+                      className={`relative z-10 p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}
+                    >
                       <step.icon className="h-6 w-6" />
                     </div>
                     <div>
@@ -655,7 +771,7 @@ export default function App() {
                                       isSelected ? 'border-white/40 bg-white/10 shadow-lg' : 'border-white/10 bg-black/20 hover:bg-white/5'
                                     }`}
                                   >
-                                    <DroneModelIcon
+                                    <PulseIcon
                                       icon={item.icon}
                                       colorClass={step.color}
                                       bgSoftClass={step.bgSoft}
@@ -770,19 +886,40 @@ export default function App() {
                   <div>
                     <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {["Milano", "Bergamo", "Cremona", "Mantova"].map((city, i) => (
-                        <motion.span
-                          key={city}
-                          initial={{ opacity: 0, y: 6 }}
-                          whileInView={{ opacity: 1, y: 0 }}
+                    <div className="relative mt-4 h-36 rounded-xl bg-gradient-to-br from-brand-bg to-white border border-gray-100 overflow-hidden">
+                      <svg className="absolute inset-0 w-full h-full opacity-50" aria-hidden="true">
+                        <defs>
+                          <pattern id="progetto-dotgrid" width="14" height="14" patternUnits="userSpaceOnUse">
+                            <circle cx="1.5" cy="1.5" r="1.2" fill="#60795A" />
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#progetto-dotgrid)" />
+                      </svg>
+                      {[
+                        { name: "Milano", left: "26%", top: "58%" },
+                        { name: "Bergamo", left: "54%", top: "26%" },
+                        { name: "Cremona", left: "42%", top: "80%" },
+                        { name: "Mantova", left: "76%", top: "60%" }
+                      ].map((city, i) => (
+                        <motion.div
+                          key={city.name}
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ delay: i * 0.08, duration: 0.3 }}
-                          className="inline-flex items-center gap-1 rounded-full bg-brand-light/10 pl-1.5 pr-2.5 py-1 text-xs text-brand-dark"
+                          transition={{ delay: i * 0.1, duration: 0.4 }}
+                          className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
+                          style={{ left: city.left, top: city.top }}
                         >
-                          <PinIcon className="h-3 w-3 text-brand-light" />
-                          {city}
-                        </motion.span>
+                          <div className="relative h-5 w-5">
+                            <motion.span
+                              animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                              transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay: i * 0.3 }}
+                              className="absolute inset-0 rounded-full bg-brand-light"
+                            />
+                            <PinIcon className="relative h-5 w-5 text-brand-accent" />
+                          </div>
+                          <span className="mt-0.5 whitespace-nowrap rounded-full bg-white/80 px-1.5 text-[10px] font-medium text-brand-dark">{city.name}</span>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
