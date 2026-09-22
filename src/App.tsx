@@ -376,7 +376,7 @@ export default function App() {
   const [workflowIconCenters, setWorkflowIconCenters] = useState<number[]>([]);
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
   const [featurePulseKeys, setFeaturePulseKeys] = useState<Record<number, number>>({});
-  const [isFieldMapHovered, setIsFieldMapHovered] = useState(false);
+  const [hoveredFieldCity, setHoveredFieldCity] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -887,11 +887,7 @@ export default function App() {
                   <div>
                     <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
-                    <div
-                      className="relative mt-4 h-36 rounded-xl bg-gradient-to-br from-brand-bg to-white border border-gray-100 overflow-hidden cursor-default"
-                      onMouseEnter={() => setIsFieldMapHovered(true)}
-                      onMouseLeave={() => setIsFieldMapHovered(false)}
-                    >
+                    <div className="relative mt-4 h-36 rounded-xl bg-gradient-to-br from-brand-bg to-white border border-gray-100 overflow-hidden cursor-default">
                       <svg className="absolute inset-0 w-full h-full opacity-50" aria-hidden="true">
                         <defs>
                           <pattern id="progetto-dotgrid" width="14" height="14" patternUnits="userSpaceOnUse">
@@ -912,7 +908,9 @@ export default function App() {
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.1, duration: 0.4 }}
-                          className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
+                          onMouseEnter={() => setHoveredFieldCity(city.name)}
+                          onMouseLeave={() => setHoveredFieldCity(null)}
+                          className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center cursor-default"
                           style={{ left: city.left, top: city.top }}
                         >
                           <div className="relative h-5 w-5">
@@ -926,13 +924,13 @@ export default function App() {
                           <span className="mt-0.5 whitespace-nowrap rounded-full bg-white/80 px-1.5 text-[10px] font-medium text-brand-dark">{city.name}</span>
                           <div className="flex gap-0.5 mt-0.5 h-2.5">
                             <AnimatePresence>
-                              {isFieldMapHovered && [0, 1, 2].map((j) => (
+                              {hoveredFieldCity === city.name && [0, 1, 2].map((j) => (
                                 <motion.span
                                   key={j}
                                   initial={{ opacity: 0, scale: 0, y: 4 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0, y: 4 }}
-                                  transition={{ delay: i * 0.08 + j * 0.06, duration: 0.25, ease: "easeOut" }}
+                                  transition={{ delay: j * 0.06, duration: 0.25, ease: "easeOut" }}
                                 >
                                   <Sprout className="h-2.5 w-2.5 text-brand-light" />
                                 </motion.span>
