@@ -262,8 +262,8 @@ export default function App() {
   ];
 
   const workflowSteps = [
-    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light" },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
+    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light", extra: { label: "Impatto sui costi", value: "43 €/ha → <0,05 €/ha", note: "rispetto al monitoraggio satellitare tradizionale" } },
+    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent", extra: { label: "Modelli impiegati", value: "Mavic 3M · Matrice 350 · Agras T50", note: "rilievo multispettrale e distribuzione a rateo variabile" } },
     { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
     { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
@@ -476,13 +476,20 @@ export default function App() {
                   </div>
                   <AnimatePresence>
                     {activeWorkflowStep === idx && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         className="mt-4 text-gray-300 pl-16"
                       >
                         {step.desc}
+                        {step.extra && (
+                          <div className={`mt-3 inline-flex flex-col gap-0.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2`}>
+                            <span className="text-xs uppercase tracking-wide text-gray-400">{step.extra.label}</span>
+                            <span className={`text-lg font-semibold ${step.color}`}>{step.extra.value}</span>
+                            <span className="text-xs text-gray-400">{step.extra.note}</span>
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
