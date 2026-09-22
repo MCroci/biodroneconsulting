@@ -913,6 +913,7 @@ export default function App() {
                           className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center cursor-default"
                           style={{ left: city.left, top: city.top }}
                         >
+                          <div className="absolute -inset-3" />
                           <div className="relative h-5 w-5">
                             <motion.span
                               animate={{ scale: [1, 2], opacity: [0.5, 0] }}
