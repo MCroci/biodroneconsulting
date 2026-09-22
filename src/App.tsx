@@ -31,7 +31,7 @@ const FadeIn: React.FC<{ children: React.ReactNode, delay?: number, className?: 
 /** Counts up from 0 to `to` once the number scrolls into view. */
 const CountUp: React.FC<{ to: number; duration?: number; suffix?: string }> = ({ to, duration = 1.4, suffix = "" }) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const isInView = useInView(ref, { once: true, margin: "-80px 0px -80px 0px" });
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -142,6 +142,13 @@ const DroneIcon = ({ className }: { className?: string }) => (
     <circle cx="17" cy="7" r="2" />
     <circle cx="7" cy="17" r="2" />
     <circle cx="17" cy="17" r="2" />
+  </svg>
+);
+
+/** Outline map-pin echoing the logo's pin silhouette (line-art, stroke only). */
+const PinIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="none" className={className}>
+    <path d="M50 4C26.2 4 7 23.2 7 47c0 32 43 69 43 69s43-37 43-69C93 23.2 73.8 4 50 4z" stroke="currentColor" strokeWidth="7" strokeLinejoin="round" />
   </svg>
 );
 
@@ -763,6 +770,21 @@ export default function App() {
                   <div>
                     <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {["Milano", "Bergamo", "Cremona", "Mantova"].map((city, i) => (
+                        <motion.span
+                          key={city}
+                          initial={{ opacity: 0, y: 6 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.08, duration: 0.3 }}
+                          className="inline-flex items-center gap-1 rounded-full bg-brand-light/10 pl-1.5 pr-2.5 py-1 text-xs text-brand-dark"
+                        >
+                          <PinIcon className="h-3 w-3 text-brand-light" />
+                          {city}
+                        </motion.span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -770,9 +792,14 @@ export default function App() {
 
             <FadeIn direction="right">
               <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative">
-                <div className="absolute -top-6 -right-6 bg-brand-accent text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shadow-lg transform rotate-12">
-                  <span className="text-2xl"><CountUp to={30} /></span>
-                  <span className="text-xs uppercase">Mesi</span>
+                <div className="absolute -top-7 -right-6 w-24 h-28 transform rotate-6 drop-shadow-lg">
+                  <svg viewBox="0 0 100 120" className="w-full h-full">
+                    <path d="M50 4C26.2 4 7 23.2 7 47c0 32 43 69 43 69s43-37 43-69C93 23.2 73.8 4 50 4z" fill="#2B5219" />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center text-white font-bold" style={{ paddingTop: '30%' }}>
+                    <span className="text-2xl"><CountUp to={30} /></span>
+                    <span className="text-xs uppercase">Mesi</span>
+                  </div>
                 </div>
                 <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
                 <ul className="space-y-4">
