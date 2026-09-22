@@ -170,12 +170,25 @@ const DroneModelIcon: React.FC<{
   icon: React.ComponentType<{ className?: string }>;
   colorClass: string;
   bgSoftClass: string;
-  dotClass: string;
   pulse: 'flash' | 'flicker' | 'drip';
   pulseKey: number;
-}> = ({ icon: Icon, colorClass, bgSoftClass, dotClass, pulse, pulseKey }) => (
+}> = ({ icon: Icon, colorClass, bgSoftClass, pulse, pulseKey }) => (
   <div className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${bgSoftClass}`}>
-    <Icon className={`h-4 w-4 ${colorClass}`} />
+    <motion.div
+      key={`iconmove-${pulseKey}`}
+      animate={
+        pulseKey === 0
+          ? {}
+          : pulse === 'flicker'
+          ? { x: [0, -3, 3, -3, 3, 0], rotate: [0, -14, 14, -10, 10, 0] }
+          : pulse === 'drip'
+          ? { y: [0, 4, 0] }
+          : {}
+      }
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
+      <Icon className={`h-4 w-4 ${colorClass}`} />
+    </motion.div>
     <AnimatePresence>
       {pulseKey > 0 && pulse === 'flash' && (
         <motion.span
@@ -188,22 +201,40 @@ const DroneModelIcon: React.FC<{
       )}
       {pulseKey > 0 && pulse === 'flicker' && (
         <motion.span
-          key={`flicker-${pulseKey}`}
+          key={`ring1-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 0.9 }}
+          animate={{ opacity: 0, scale: 2.8 }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+          className="absolute inset-0 rounded-full border-2 border-white pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`ring2-${pulseKey}`}
+          initial={{ opacity: 0.7, scale: 0.9 }}
+          animate={{ opacity: 0, scale: 3.8 }}
+          transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
+          className="absolute inset-0 rounded-full border-2 border-white pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`glow-${pulseKey}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0, 1, 0] }}
           transition={{ duration: 0.5, times: [0, 0.25, 0.5, 0.75, 1] }}
-          className={`absolute -inset-1.5 rounded-full ${bgSoftClass} pointer-events-none`}
+          className="absolute -inset-2 rounded-full bg-white/60 blur-[2px] pointer-events-none"
         />
       )}
-      {pulseKey > 0 && pulse === 'drip' && (
+      {pulseKey > 0 && pulse === 'drip' && [-10, -4, 4, 10].map((xOff, i) => (
         <motion.span
-          key={`drip-${pulseKey}`}
-          initial={{ opacity: 1, y: 0 }}
-          animate={{ opacity: 0, y: 16 }}
-          transition={{ duration: 0.6, ease: "easeIn" }}
-          className={`absolute bottom-0 left-1/2 -ml-[3px] h-1.5 w-1.5 rounded-full ${dotClass} pointer-events-none`}
+          key={`drip-${pulseKey}-${i}`}
+          initial={{ opacity: 1, x: 0, y: 0, scale: 1.3 }}
+          animate={{ opacity: 0, x: xOff, y: 30 + i * 3, scale: 0.5 }}
+          transition={{ duration: 0.85, delay: i * 0.08, ease: "easeIn" }}
+          className="absolute top-1/2 left-1/2 -ml-[4px] -mt-[4px] h-2 w-2 rounded-full bg-white shadow-[0_0_4px_rgba(255,255,255,0.8)] pointer-events-none"
         />
-      )}
+      ))}
     </AnimatePresence>
   </div>
 );
@@ -621,7 +652,6 @@ export default function App() {
                                       icon={item.icon}
                                       colorClass={step.color}
                                       bgSoftClass={step.bgSoft}
-                                      dotClass={step.bg}
                                       pulse={item.pulse}
                                       pulseKey={dronePulseKeys[item.name] || 0}
                                     />
