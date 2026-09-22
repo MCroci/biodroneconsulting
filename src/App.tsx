@@ -165,6 +165,49 @@ const AnimatedCostValue: React.FC<{ from: number; to: number }> = ({ from, to })
   return <>{value < 1 ? value.toFixed(2).replace('.', ',') : Math.round(value).toString()}</>;
 };
 
+/** Icon badge that plays a distinct one-shot animation (per `pulse` type) each time `pulseKey` increases. */
+const DroneModelIcon: React.FC<{
+  icon: React.ComponentType<{ className?: string }>;
+  colorClass: string;
+  bgSoftClass: string;
+  dotClass: string;
+  pulse: 'flash' | 'flicker' | 'drip';
+  pulseKey: number;
+}> = ({ icon: Icon, colorClass, bgSoftClass, dotClass, pulse, pulseKey }) => (
+  <div className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${bgSoftClass}`}>
+    <Icon className={`h-4 w-4 ${colorClass}`} />
+    <AnimatePresence>
+      {pulseKey > 0 && pulse === 'flash' && (
+        <motion.span
+          key={`flash-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 0.6 }}
+          animate={{ opacity: 0, scale: 1.7 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="absolute inset-0 rounded-full bg-white pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`flicker-${pulseKey}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 0, 1, 0] }}
+          transition={{ duration: 0.5, times: [0, 0.25, 0.5, 0.75, 1] }}
+          className={`absolute -inset-1.5 rounded-full ${bgSoftClass} pointer-events-none`}
+        />
+      )}
+      {pulseKey > 0 && pulse === 'drip' && (
+        <motion.span
+          key={`drip-${pulseKey}`}
+          initial={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 0, y: 16 }}
+          transition={{ duration: 0.6, ease: "easeIn" }}
+          className={`absolute bottom-0 left-1/2 -ml-[3px] h-1.5 w-1.5 rounded-full ${dotClass} pointer-events-none`}
+        />
+      )}
+    </AnimatePresence>
+  </div>
+);
+
 /**
  * Decorative fan of curved lines echoing the "campo" (field furrows)
  * graphic at the base of the brand logo, converging toward an
@@ -245,6 +288,8 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeWorkflowStep, setActiveWorkflowStep] = useState(0);
   const [isHoveringWorkflow, setIsHoveringWorkflow] = useState(false);
+  const [selectedDroneModel, setSelectedDroneModel] = useState<string | null>(null);
+  const [dronePulseKeys, setDronePulseKeys] = useState<Record<string, number>>({});
   const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   useEffect(() => {
@@ -274,6 +319,10 @@ export default function App() {
     return () => clearInterval(timer);
   }, [isHoveringWorkflow]);
 
+  useEffect(() => {
+    setSelectedDroneModel(null);
+  }, [activeWorkflowStep]);
+
   const navLinks = [
     { name: 'Il Drone', href: '#drone' },
     { name: 'Come Funziona', href: '#workflow' },
@@ -286,13 +335,18 @@ export default function App() {
       extra: { type: 'stat' as const, label: "Impatto sui costi", from: 43, to: 0.05, unit: "€/ha", change: "-99,9%", note: "rispetto al monitoraggio satellitare tradizionale" } },
     { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent", bgSoft: "bg-brand-accent/15",
       extra: { type: 'chips' as const, label: "Modelli impiegati", items: [
-        { name: "Mavic 3M", role: "Rilievo multispettrale", icon: Camera },
-        { name: "Matrice 350", role: "Piattaforma di volo primaria", icon: Zap },
-        { name: "Agras T50", role: "Distribuzione a rateo variabile", icon: Droplets }
+        { name: "Mavic 3M", role: "Rilievo multispettrale", detail: "Drone compatto usato per i passaggi frequenti di rilievo multispettrale sulle parcelle sperimentali.", icon: Camera, pulse: 'flash' as const },
+        { name: "Matrice 350", role: "Piattaforma di volo primaria", detail: "Piattaforma principale del progetto per le acquisizioni ad altissima risoluzione guidate dalle mappe satellitari.", icon: Zap, pulse: 'flicker' as const },
+        { name: "Agras T50", role: "Distribuzione a rateo variabile", detail: "Drone agricolo impiegato nei protocolli DSS (WP5) per la distribuzione a rateo variabile dei biostimolanti.", icon: Droplets, pulse: 'drip' as const }
       ] } },
     { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
     { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
+
+  const activeStepExtra = workflowSteps[activeWorkflowStep].extra;
+  const selectedModelDetail = activeStepExtra?.type === 'chips' && selectedDroneModel
+    ? activeStepExtra.items.find((i) => i.name === selectedDroneModel) ?? null
+    : null;
 
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
@@ -546,25 +600,38 @@ export default function App() {
                           >
                             <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">{step.extra.label}</div>
                             <div className="flex flex-wrap gap-3">
-                              {step.extra.items.map((item) => (
-                                <motion.div
-                                  key={item.name}
-                                  variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, show: { opacity: 1, y: 0, scale: 1 } }}
-                                  whileHover={{ scale: 1.06, y: -2 }}
-                                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-4 py-2.5"
-                                >
+                              {step.extra.items.map((item) => {
+                                const isSelected = selectedDroneModel === item.name;
+                                return (
                                   <motion.div
-                                    whileHover={{ rotate: 25 }}
-                                    className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${step.bgSoft}`}
+                                    key={item.name}
+                                    variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, show: { opacity: 1, y: 0, scale: 1 } }}
+                                    whileHover={{ scale: 1.06, y: -2 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedDroneModel(isSelected ? null : item.name);
+                                      setDronePulseKeys((prev) => ({ ...prev, [item.name]: (prev[item.name] || 0) + 1 }));
+                                    }}
+                                    className={`flex items-center gap-2.5 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors ${
+                                      isSelected ? 'border-white/40 bg-white/10 shadow-lg' : 'border-white/10 bg-black/20 hover:bg-white/5'
+                                    }`}
                                   >
-                                    <item.icon className={`h-4 w-4 ${step.color}`} />
+                                    <DroneModelIcon
+                                      icon={item.icon}
+                                      colorClass={step.color}
+                                      bgSoftClass={step.bgSoft}
+                                      dotClass={step.bg}
+                                      pulse={item.pulse}
+                                      pulseKey={dronePulseKeys[item.name] || 0}
+                                    />
+                                    <div>
+                                      <div className="text-sm font-semibold text-white leading-tight">{item.name}</div>
+                                      <div className="text-[11px] text-gray-400 leading-tight">{item.role}</div>
+                                    </div>
                                   </motion.div>
-                                  <div>
-                                    <div className="text-sm font-semibold text-white leading-tight">{item.name}</div>
-                                    <div className="text-[11px] text-gray-400 leading-tight">{item.role}</div>
-                                  </div>
-                                </motion.div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </motion.div>
                         )}
@@ -588,7 +655,22 @@ export default function App() {
                 >
                   <FieldLines className="absolute inset-0 w-full h-full text-white/15" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
-                  
+
+                  <AnimatePresence>
+                    {selectedModelDetail && (
+                      <motion.div
+                        key={selectedModelDetail.name}
+                        initial={{ opacity: 0, scale: 0.7, rotate: -8 }}
+                        animate={{ opacity: 0.16, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.7 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute top-6 right-6 text-white pointer-events-none"
+                      >
+                        <selectedModelDetail.icon className="h-28 w-28" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Overlay UI based on step */}
                   <div className="absolute bottom-8 left-8 right-8">
                     <div className="bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-white/20">
@@ -597,6 +679,19 @@ export default function App() {
                         <span className="font-mono text-sm text-brand-light tracking-wider uppercase">Fase Attiva</span>
                       </div>
                       <h4 className="text-2xl text-white">{workflowSteps[activeWorkflowStep].title}</h4>
+                      <AnimatePresence mode="wait">
+                        {selectedModelDetail && (
+                          <motion.p
+                            key={selectedModelDetail.name}
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="text-sm text-gray-300 mt-2 overflow-hidden"
+                          >
+                            <span className="text-white font-semibold">{selectedModelDetail.name}</span> — {selectedModelDetail.detail}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </motion.div>
