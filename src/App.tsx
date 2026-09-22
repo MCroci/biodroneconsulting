@@ -145,6 +145,26 @@ const DroneIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+/** Counts from `from` down to `to` on mount, remounting restarts the animation. */
+const AnimatedCostValue: React.FC<{ from: number; to: number }> = ({ from, to }) => {
+  const [value, setValue] = useState(from);
+  useEffect(() => {
+    let raf: number;
+    let start: number | null = null;
+    const duration = 1200;
+    const tick = (ts: number) => {
+      if (start === null) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(from - (from - to) * eased);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [from, to]);
+  return <>{value < 1 ? value.toFixed(2).replace('.', ',') : Math.round(value).toString()}</>;
+};
+
 /**
  * Decorative fan of curved lines echoing the "campo" (field furrows)
  * graphic at the base of the brand logo, converging toward an
@@ -262,8 +282,14 @@ export default function App() {
   ];
 
   const workflowSteps = [
-    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light", extra: { label: "Impatto sui costi", value: "43 €/ha → <0,05 €/ha", note: "rispetto al monitoraggio satellitare tradizionale" } },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent", extra: { label: "Modelli impiegati", value: "Mavic 3M · Matrice 350 · Agras T50", note: "rilievo multispettrale e distribuzione a rateo variabile" } },
+    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light", bgSoft: "bg-brand-light/15",
+      extra: { type: 'stat' as const, label: "Impatto sui costi", from: 43, to: 0.05, unit: "€/ha", change: "-99,9%", note: "rispetto al monitoraggio satellitare tradizionale" } },
+    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent", bgSoft: "bg-brand-accent/15",
+      extra: { type: 'chips' as const, label: "Modelli impiegati", items: [
+        { name: "Mavic 3M", role: "Rilievo multispettrale", icon: Camera },
+        { name: "Matrice 350", role: "Piattaforma di volo primaria", icon: Zap },
+        { name: "Agras T50", role: "Distribuzione a rateo variabile", icon: Droplets }
+      ] } },
     { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
     { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
@@ -483,12 +509,64 @@ export default function App() {
                         className="mt-4 text-gray-300 pl-16"
                       >
                         {step.desc}
-                        {step.extra && (
-                          <div className={`mt-3 inline-flex flex-col gap-0.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2`}>
-                            <span className="text-xs uppercase tracking-wide text-gray-400">{step.extra.label}</span>
-                            <span className={`text-lg font-semibold ${step.color}`}>{step.extra.value}</span>
-                            <span className="text-xs text-gray-400">{step.extra.note}</span>
-                          </div>
+                        {step.extra?.type === 'stat' && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15, duration: 0.4 }}
+                            className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-black/20 px-5 py-4"
+                          >
+                            <motion.div
+                              animate={{ scale: [1, 1.15, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${step.bgSoft}`}
+                            >
+                              <TrendingDown className={`h-5 w-5 ${step.color}`} />
+                            </motion.div>
+                            <div className="min-w-0">
+                              <div className="text-xs uppercase tracking-wide text-gray-400">{step.extra.label}</div>
+                              <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
+                                <span className="text-base text-gray-500 line-through">{step.extra.from} {step.extra.unit}</span>
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                                <span className={`text-2xl font-semibold tabular-nums ${step.color}`}>
+                                  <AnimatedCostValue from={step.extra.from} to={step.extra.to} /> {step.extra.unit}
+                                </span>
+                                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white">{step.extra.change}</span>
+                              </div>
+                              <div className="mt-1 text-xs text-gray-400">{step.extra.note}</div>
+                            </div>
+                          </motion.div>
+                        )}
+                        {step.extra?.type === 'chips' && (
+                          <motion.div
+                            initial="hidden"
+                            animate="show"
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } } }}
+                            className="mt-4"
+                          >
+                            <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">{step.extra.label}</div>
+                            <div className="flex flex-wrap gap-3">
+                              {step.extra.items.map((item) => (
+                                <motion.div
+                                  key={item.name}
+                                  variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, show: { opacity: 1, y: 0, scale: 1 } }}
+                                  whileHover={{ scale: 1.06, y: -2 }}
+                                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-4 py-2.5"
+                                >
+                                  <motion.div
+                                    whileHover={{ rotate: 25 }}
+                                    className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${step.bgSoft}`}
+                                  >
+                                    <item.icon className={`h-4 w-4 ${step.color}`} />
+                                  </motion.div>
+                                  <div>
+                                    <div className="text-sm font-semibold text-white leading-tight">{item.name}</div>
+                                    <div className="text-[11px] text-gray-400 leading-tight">{item.role}</div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
                         )}
                       </motion.div>
                     )}
