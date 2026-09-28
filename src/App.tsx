@@ -164,10 +164,10 @@ export default function App() {
   ];
 
   const workflowSteps = [
-    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
-    { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
-    { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
+    { title: "1. Mappatura Satellitare", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
+    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
+    { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
+    { title: "4. Protocolli DSS", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
 
   return (
@@ -316,7 +316,7 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]" },
+              { icon: Target, title: "Massima Precisione", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]" },
               { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]" },
               { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]" },
               { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]" }
