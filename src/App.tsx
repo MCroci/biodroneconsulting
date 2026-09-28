@@ -445,8 +445,10 @@ export default function App() {
                       <p className="text-sm text-gray-600 mt-1">Farm Consulting (Capofila), UCSC DI.PRO.VE.S (Ricerca), CITIMAP (Tecnologia) e 6 aziende agricole lombarde.</p>
                     </div>
                   </div>
-                  <div className="pt-2 border-t border-gray-50 flex items-center gap-4">
-                    <img src="https://upload.wikimedia.org/wikipedia/it/thumb/a/a2/Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg/512px-Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg.png" alt="Università Cattolica del Sacro Cuore" className="h-10 object-contain" />
+                  <div className="pt-2 border-t border-gray-50 flex flex-wrap items-center gap-x-8 gap-y-4">
+                    <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-9 max-w-full object-contain" />
+                    <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-16 object-contain" />
+                    <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain brightness-0 opacity-80" />
                   </div>
                 </div>
                 <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
@@ -670,9 +672,24 @@ export default function App() {
               </ul>
             </div>
             <div>
-              <h4 className="text-white mb-4">Partner Scientifico</h4>
-              <div className="bg-white p-3 rounded-lg w-fit">
-                <img src="https://upload.wikimedia.org/wikipedia/it/thumb/a/a2/Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg/512px-Logo_della_Universit%C3%A0_Cattolica_del_Sacro_Cuore.svg.png" alt="Università Cattolica del Sacro Cuore" className="h-10 object-contain" />
+              <h4 className="text-white mb-4">Partner di Progetto</h4>
+              <div className="space-y-4">
+                <div>
+                  <span className="block text-xs uppercase tracking-wider mb-2">Capofila</span>
+                  <div className="bg-white p-3 rounded-lg w-fit">
+                    <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain" />
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-xs uppercase tracking-wider mb-2">Partner Scientifico</span>
+                  <div className="bg-white p-3 rounded-lg w-fit">
+                    <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-xs uppercase tracking-wider mb-2">Partner Tecnologico</span>
+                  <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain" />
+                </div>
               </div>
             </div>
           </div>
