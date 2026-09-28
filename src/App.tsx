@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { 
   Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
@@ -28,19 +28,10 @@ const FadeIn: React.FC<{ children: React.ReactNode, delay?: number, className?: 
   );
 };
 
-const Floating: React.FC<{ children: React.ReactNode, delay?: number, duration?: number }> = ({ children, delay = 0, duration = 4 }) => (
-  <motion.div
-    animate={{ y: [0, -15, 0] }}
-    transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
-  >
-    {children}
-  </motion.div>
-);
-
 /** Counts up from 0 to `to` once the number scrolls into view. */
 const CountUp: React.FC<{ to: number; duration?: number; suffix?: string }> = ({ to, duration = 1.4, suffix = "" }) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const isInView = useInView(ref, { once: true, margin: "-80px 0px -80px 0px" });
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -72,6 +63,65 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
   );
 };
 
+/**
+ * A small drone that detaches once past the hero and flies alongside
+ * the page: it swings left, then right, then left again as you scroll
+ * down, and retraces the exact same path scrolling back up (it's a
+ * pure function of scroll position). Desktop only — a fixed 3D canvas
+ * chasing the cursor on a narrow phone screen would just get in the way.
+ */
+const ScrollFlyingDrone: React.FC = () => {
+  const [enabled, setEnabled] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  const { scrollY, scrollYProgress } = useScroll();
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    setEnabled(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setEnabled(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+
+  const x = useTransform(
+    scrollYProgress,
+    [0, 0.16, 0.22, 0.42, 0.48, 0.68, 0.74, 0.9],
+    ['0vw', '0vw', '-25vw', '-25vw', '24vw', '24vw', '-18vw', '-18vw']
+  );
+  // The hero fills exactly one screen (see the hero section's lg:h-screen), so
+  // only start revealing the flying drone once we've scrolled a full screen
+  // past it — a fixed scroll-progress fraction would overlap the hero on
+  // shorter pages, showing two drones on screen at once.
+  const fadeInPastHero = useTransform(scrollY, [viewportHeight * 0.95, viewportHeight * 1.25], [0, 1]);
+  const fadeOutNearFooter = useTransform(scrollYProgress, [0.86, 0.94], [1, 0]);
+  const opacity = useTransform([fadeInPastHero, fadeOutNearFooter], ([a, b]: number[]) => a * b);
+
+  if (!enabled) return null;
+
+  return (
+    <motion.div
+      style={{ x, opacity }}
+      className="fixed top-[28vh] left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[240px] h-[180px]"
+      aria-hidden="true"
+    >
+      <motion.div
+        animate={{ y: [0, -15, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className="relative w-full h-full"
+      >
+        <div className="absolute inset-0 bg-brand-light/10 rounded-full blur-3xl scale-125"></div>
+        <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" environment={false} />
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const DroneIcon = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -95,6 +145,149 @@ const DroneIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+/** Outline map-pin echoing the logo's pin silhouette (line-art, stroke only). */
+const PinIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="none" className={className}>
+    <path d="M50 4C26.2 4 7 23.2 7 47c0 32 43 69 43 69s43-37 43-69C93 23.2 73.8 4 50 4z" stroke="currentColor" strokeWidth="7" strokeLinejoin="round" />
+  </svg>
+);
+
+/** Counts from `from` down to `to` on mount, remounting restarts the animation. */
+const AnimatedCostValue: React.FC<{ from: number; to: number }> = ({ from, to }) => {
+  const [value, setValue] = useState(from);
+  useEffect(() => {
+    let raf: number;
+    let start: number | null = null;
+    const duration = 1200;
+    const tick = (ts: number) => {
+      if (start === null) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(from - (from - to) * eased);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [from, to]);
+  return <>{value < 1 ? value.toFixed(2).replace('.', ',') : Math.round(value).toString()}</>;
+};
+
+/** Icon badge that plays a distinct one-shot animation (per `pulse` type) each time `pulseKey` increases. */
+const PulseIcon: React.FC<{
+  icon: React.ComponentType<{ className?: string }>;
+  colorClass: string;
+  bgSoftClass: string;
+  pulse: 'flash' | 'flicker' | 'drip' | 'lock' | 'grow';
+  pulseKey: number;
+  boxClassName?: string;
+  iconClassName?: string;
+  accentColor?: string;
+}> = ({ icon: Icon, colorClass, bgSoftClass, pulse, pulseKey, boxClassName = "h-8 w-8 rounded-full", iconClassName = "h-4 w-4", accentColor = "#ffffff" }) => (
+  <div className={`relative flex flex-shrink-0 items-center justify-center ${boxClassName} ${bgSoftClass}`}>
+    <motion.div
+      key={`iconmove-${pulseKey}`}
+      animate={
+        pulseKey === 0
+          ? {}
+          : pulse === 'flicker'
+          ? { x: [0, -3, 3, -3, 3, 0], rotate: [0, -14, 14, -10, 10, 0] }
+          : pulse === 'drip'
+          ? { y: [0, 4, 0] }
+          : pulse === 'grow'
+          ? { scale: [1, 1.35, 1], y: [0, -3, 0] }
+          : pulse === 'lock'
+          ? { scale: [1, 0.85, 1] }
+          : {}
+      }
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
+      <Icon className={`${iconClassName} ${colorClass}`} />
+    </motion.div>
+    <AnimatePresence>
+      {pulseKey > 0 && pulse === 'flash' && (
+        <motion.span
+          key={`flash-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 0.6 }}
+          animate={{ opacity: 0, scale: 1.7 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ backgroundColor: accentColor }}
+          className="absolute inset-0 rounded-full pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`ring1-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 0.9 }}
+          animate={{ opacity: 0, scale: 2.8 }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`ring2-${pulseKey}`}
+          initial={{ opacity: 0.7, scale: 0.9 }}
+          animate={{ opacity: 0, scale: 3.8 }}
+          transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'flicker' && (
+        <motion.span
+          key={`glow-${pulseKey}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 0, 1, 0] }}
+          transition={{ duration: 0.5, times: [0, 0.25, 0.5, 0.75, 1] }}
+          style={{ backgroundColor: accentColor }}
+          className="absolute -inset-2 rounded-full opacity-60 blur-[2px] pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'drip' && [-10, -4, 4, 10].map((xOff, i) => (
+        <motion.span
+          key={`drip-${pulseKey}-${i}`}
+          initial={{ opacity: 1, x: 0, y: 0, scale: 1.3 }}
+          animate={{ opacity: 0, x: xOff, y: 30 + i * 3, scale: 0.5 }}
+          transition={{ duration: 0.85, delay: i * 0.08, ease: "easeIn" }}
+          style={{ backgroundColor: accentColor }}
+          className="absolute top-1/2 left-1/2 -ml-[4px] -mt-[4px] h-2 w-2 rounded-full shadow-[0_0_4px_rgba(0,0,0,0.25)] pointer-events-none"
+        />
+      ))}
+      {pulseKey > 0 && pulse === 'lock' && (
+        <motion.span
+          key={`lockring1-${pulseKey}`}
+          initial={{ opacity: 0.9, scale: 1.9 }}
+          animate={{ opacity: 0, scale: 0.85 }}
+          transition={{ duration: 0.5, ease: "easeIn" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'lock' && (
+        <motion.span
+          key={`lockring2-${pulseKey}`}
+          initial={{ opacity: 0.6, scale: 2.6 }}
+          animate={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.12, ease: "easeIn" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+      {pulseKey > 0 && pulse === 'grow' && (
+        <motion.span
+          key={`growring-${pulseKey}`}
+          initial={{ opacity: 0.7, scale: 0.8 }}
+          animate={{ opacity: 0, scale: 2.3 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ borderColor: accentColor }}
+          className="absolute inset-0 rounded-full border-2 pointer-events-none"
+        />
+      )}
+    </AnimatePresence>
+  </div>
+);
+
 /**
  * Decorative fan of curved lines echoing the "campo" (field furrows)
  * graphic at the base of the brand logo, converging toward an
@@ -103,20 +296,68 @@ const DroneIcon = ({ className }: { className?: string }) => (
 const FieldLines = ({ className = "" }: { className?: string }) => {
   const apexX = 350, apexY = 610, topY = 90, maxSpreadX = 310, bow = 0.95, count = 7;
   const ctrlY = apexY - (apexY - topY) * 0.55;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+
   const lines = Array.from({ length: count }, (_, i) => {
     const frac = (i + 1) / count;
     return { endX: apexX + frac * maxSpreadX, ctrlX: apexX + frac * maxSpreadX * bow };
   });
 
+  const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setPointer({
+      x: ((e.clientX - rect.left) / rect.width) * 700,
+      y: ((e.clientY - rect.top) / rect.height) * 500,
+    });
+  };
+
+  // How far a point sways sideways, like a stalk of wheat leaning away from a
+  // hand brushed through it: falls off with distance from the pointer.
+  const sway = (px: number, py: number) => {
+    if (!pointer) return 0;
+    const dx = px - pointer.x;
+    const dy = py - pointer.y;
+    const dist = Math.hypot(dx, dy);
+    const radius = 280;
+    const influence = Math.max(0, 1 - dist / radius);
+    return (dx >= 0 ? 1 : -1) * influence * 70;
+  };
+
   return (
-    <svg viewBox="0 0 700 500" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
+    <svg
+      ref={svgRef}
+      viewBox="0 0 700 500"
+      preserveAspectRatio="xMidYMax slice"
+      className={className}
+      aria-hidden="true"
+      onMouseMove={handleMove}
+      onMouseLeave={() => setPointer(null)}
+    >
       <g fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        {lines.map(({ endX, ctrlX }, i) => (
-          <React.Fragment key={i}>
-            <path d={`M ${apexX} ${apexY} Q ${ctrlX} ${ctrlY} ${endX} ${topY}`} />
-            <path d={`M ${apexX} ${apexY} Q ${2 * apexX - ctrlX} ${ctrlY} ${2 * apexX - endX} ${topY}`} />
-          </React.Fragment>
-        ))}
+        {lines.map(({ endX, ctrlX }, i) => {
+          const midX = (apexX + endX) / 2;
+          const midY = (apexY + ctrlY) / 2;
+          const swayEnd = sway(endX, topY);
+          const swayCtrl = sway(midX, midY);
+          const endXl = 2 * apexX - endX;
+          const ctrlXl = 2 * apexX - ctrlX;
+          const swayEndL = sway(endXl, topY);
+          const swayCtrlL = sway(2 * apexX - midX, midY);
+          return (
+            <React.Fragment key={i}>
+              <path
+                d={`M ${apexX} ${apexY} Q ${ctrlX + swayCtrl} ${ctrlY} ${endX + swayEnd} ${topY}`}
+                style={{ transition: "d 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}
+              />
+              <path
+                d={`M ${apexX} ${apexY} Q ${ctrlXl + swayCtrlL} ${ctrlY} ${endXl + swayEndL} ${topY}`}
+                style={{ transition: "d 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}
+              />
+            </React.Fragment>
+          );
+        })}
       </g>
     </svg>
   );
@@ -127,7 +368,15 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeWorkflowStep, setActiveWorkflowStep] = useState(0);
   const [isHoveringWorkflow, setIsHoveringWorkflow] = useState(false);
+  const [selectedDroneModel, setSelectedDroneModel] = useState<string | null>(null);
+  const [dronePulseKeys, setDronePulseKeys] = useState<Record<string, number>>({});
   const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const workflowStepsContainerRef = useRef<HTMLDivElement>(null);
+  const workflowIconRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [workflowIconCenters, setWorkflowIconCenters] = useState<number[]>([]);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  const [featurePulseKeys, setFeaturePulseKeys] = useState<Record<number, number>>({});
+  const [hoveredFieldCity, setHoveredFieldCity] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -156,6 +405,32 @@ export default function App() {
     return () => clearInterval(timer);
   }, [isHoveringWorkflow]);
 
+  useEffect(() => {
+    setSelectedDroneModel(null);
+  }, [activeWorkflowStep]);
+
+  useLayoutEffect(() => {
+    const container = workflowStepsContainerRef.current;
+    if (!container) return;
+    const measure = () => {
+      const containerTop = container.getBoundingClientRect().top;
+      const centers = workflowIconRefs.current.map((el) => {
+        if (!el) return 0;
+        const rect = el.getBoundingClientRect();
+        return rect.top - containerTop + rect.height / 2;
+      });
+      setWorkflowIconCenters(centers);
+    };
+    measure();
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(container);
+    window.addEventListener('resize', measure);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [activeWorkflowStep]);
+
   const navLinks = [
     { name: 'Il Drone', href: '#drone' },
     { name: 'Come Funziona', href: '#workflow' },
@@ -164,19 +439,31 @@ export default function App() {
   ];
 
   const workflowSteps = [
-    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
+    { title: "1. Mappatura Satellitare (WP2)", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-brand-light", bg: "bg-brand-light", bgSoft: "bg-brand-light/15",
+      extra: { type: 'stat' as const, label: "Impatto sui costi", from: 43, to: 0.05, unit: "€/ha", change: "-99,9%", note: "rispetto al monitoraggio satellitare tradizionale" } },
+    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni (CITIMAP) acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent", bgSoft: "bg-brand-accent/15",
+      extra: { type: 'chips' as const, label: "Modelli impiegati", items: [
+        { name: "Mavic 3M", role: "Rilievo multispettrale", detail: "Drone compatto usato per i passaggi frequenti di rilievo multispettrale sulle parcelle sperimentali.", icon: Camera, pulse: 'flash' as const },
+        { name: "Matrice 350", role: "Piattaforma di volo primaria", detail: "Piattaforma principale del progetto per le acquisizioni ad altissima risoluzione guidate dalle mappe satellitari.", icon: Zap, pulse: 'flicker' as const },
+        { name: "Agras T50", role: "Distribuzione a rateo variabile", detail: "Drone agricolo impiegato nei protocolli DSS (WP5) per la distribuzione a rateo variabile dei biostimolanti.", icon: Droplets, pulse: 'drip' as const }
+      ] } },
     { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati (UCSC) e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
     { title: "4. Protocolli DSS (WP5)", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
 
+  const activeStepExtra = workflowSteps[activeWorkflowStep].extra;
+  const selectedModelDetail = activeStepExtra?.type === 'chips' && selectedDroneModel
+    ? activeStepExtra.items.find((i) => i.name === selectedDroneModel) ?? null
+    : null;
+
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
       <DroneCursor />
+      <ScrollFlyingDrone />
 
       {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
-        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             
             {/* Logo */}
@@ -237,10 +524,10 @@ export default function App() {
         </AnimatePresence>
       </nav>
 
-      {/* Styled Hero Section Container */}
-      <section className="bg-white w-full pt-32 lg:pt-36 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
-        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-24">
-          <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[75vh] flex items-center px-8 py-16 lg:px-24 overflow-hidden relative">
+      {/* Styled Hero Section Container — fills exactly one screen from desktop up */}
+      <section className="bg-white w-full pt-28 lg:pt-32 pb-10 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:justify-center rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[70vh] lg:min-h-0 flex items-center px-8 py-12 lg:px-24 lg:py-10 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full z-10 relative">
               
               {/* Text Content */}
@@ -277,7 +564,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1 }}
-                className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
+                className="relative h-[380px] lg:h-[min(46vh,480px)] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
               >
                  <div className="absolute inset-0 bg-brand-light/5 rounded-full blur-3xl transform scale-150"></div>
                  <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
@@ -302,7 +589,7 @@ export default function App() {
 
       {/* Perché il Drone? (Educational Section) */}
       <section id="drone" className="py-24 bg-transparent relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Divulgazione</span>
@@ -316,29 +603,59 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]" },
-              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]" },
-              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]" },
-              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]" }
-            ].map((feature, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-brand-light/30 transition-all duration-300 group h-full flex flex-col relative overflow-hidden">
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform`}></div>
-                  <div className={`${feature.color} ${feature.text} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                    <feature.icon className="h-7 w-7" />
+              { icon: Target, title: "Precisione Chirurgica", desc: "Trattiamo solo le aree del campo che ne hanno realmente bisogno, pianta per pianta.", color: "bg-[#2B5219]/10", text: "text-[#2B5219]", hex: "#2B5219", pulse: 'lock' as const, detail: "Le zone di intervento derivano dalla zonizzazione k-Means sulle mappe NDVI (WP2)." },
+              { icon: Sprout, title: "Zero Compattamento", desc: "A differenza dei trattori, il drone non schiaccia il suolo e non danneggia le colture in fase avanzata.", color: "bg-[#60795A]/10", text: "text-[#60795A]", hex: "#60795A", pulse: 'grow' as const, detail: "Il suolo resta intatto, condizione ideale per il Ground-Truthing a terra." },
+              { icon: Zap, title: "Tempestività", desc: "Possiamo intervenire anche subito dopo forti piogge, quando i mezzi terrestri affonderebbero nel fango.", color: "bg-[#15240D]/10", text: "text-[#15240D]", hex: "#15240D", pulse: 'flicker' as const, detail: "Nessuna finestra di trattamento persa per pioggia o terreno molle." },
+              { icon: TrendingDown, title: "Meno Chimica", desc: "Sostituiamo i pesticidi con lanci mirati di insetti utili (lotta biologica) tramite speciali dispenser.", color: "bg-[#2B5219]/20", text: "text-[#2B5219]", hex: "#2B5219", pulse: 'drip' as const, detail: "Stessa logica di applicazione mirata validata nei Protocolli DSS (WP5)." }
+            ].map((feature, idx) => {
+              const isSelected = selectedFeature === idx;
+              return (
+                <FadeIn key={idx} delay={idx * 0.1} direction="up" className="h-full">
+                  <div
+                    onClick={() => {
+                      setSelectedFeature(isSelected ? null : idx);
+                      setFeaturePulseKeys((prev) => ({ ...prev, [idx]: (prev[idx] || 0) + 1 }));
+                    }}
+                    className={`bg-white p-8 rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full flex flex-col relative overflow-hidden cursor-pointer ${
+                      isSelected ? 'border-brand-light shadow-xl -translate-y-2' : 'border-gray-100 hover:border-brand-light/30'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                    <PulseIcon
+                      icon={feature.icon}
+                      colorClass={feature.text}
+                      bgSoftClass={feature.color}
+                      pulse={feature.pulse}
+                      pulseKey={featurePulseKeys[idx] || 0}
+                      accentColor={feature.hex}
+                      boxClassName="w-14 h-14 rounded-xl mb-6 group-hover:scale-110 transition-transform"
+                      iconClassName="h-7 w-7"
+                    />
+                    <h3 className="text-xl text-gray-900 mb-3">{feature.title}</h3>
+                    <p className="text-gray-600 flex-1">{feature.desc}</p>
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <p className={`mt-4 pt-4 border-t border-gray-100 text-sm ${feature.text}`}>{feature.detail}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <h3 className="text-xl text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 flex-1">{feature.desc}</p>
-                </div>
-              </FadeIn>
-            ))}
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Come Funziona (Interactive Workflow) */}
       <section id="workflow" className="py-24 bg-brand-dark text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
@@ -354,19 +671,36 @@ export default function App() {
             onMouseLeave={() => setIsHoveringWorkflow(false)}
           >
             {/* Steps Navigation */}
-            <div className="lg:col-span-5 space-y-4">
+            <div className="lg:col-span-5 space-y-4 relative" ref={workflowStepsContainerRef}>
+              {workflowIconCenters.length === workflowSteps.length && (
+                <>
+                  <div
+                    className="hidden lg:block absolute left-12 w-0.5 bg-white/10 rounded-full"
+                    style={{ top: workflowIconCenters[0], height: workflowIconCenters[workflowIconCenters.length - 1] - workflowIconCenters[0] }}
+                  />
+                  <motion.div
+                    className="hidden lg:block absolute left-12 w-0.5 bg-brand-light rounded-full"
+                    style={{ top: workflowIconCenters[0] }}
+                    animate={{ height: workflowIconCenters[activeWorkflowStep] - workflowIconCenters[0] }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  />
+                </>
+              )}
               {workflowSteps.map((step, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => setActiveWorkflowStep(idx)}
                   className={`cursor-pointer p-6 rounded-2xl transition-all duration-300 border-2 ${
-                    activeWorkflowStep === idx 
-                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2' 
+                    activeWorkflowStep === idx
+                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2'
                       : 'bg-transparent border-transparent hover:bg-white/5'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}>
+                    <div
+                      ref={(el) => { workflowIconRefs.current[idx] = el; }}
+                      className={`relative z-10 p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}
+                    >
                       <step.icon className="h-6 w-6" />
                     </div>
                     <div>
@@ -377,13 +711,84 @@ export default function App() {
                   </div>
                   <AnimatePresence>
                     {activeWorkflowStep === idx && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         className="mt-4 text-gray-300 pl-16"
                       >
                         {step.desc}
+                        {step.extra?.type === 'stat' && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15, duration: 0.4 }}
+                            className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-black/20 px-5 py-4"
+                          >
+                            <motion.div
+                              animate={{ scale: [1, 1.15, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${step.bgSoft}`}
+                            >
+                              <TrendingDown className={`h-5 w-5 ${step.color}`} />
+                            </motion.div>
+                            <div className="min-w-0">
+                              <div className="text-xs uppercase tracking-wide text-gray-400">{step.extra.label}</div>
+                              <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
+                                <span className="text-base text-gray-500 line-through">{step.extra.from} {step.extra.unit}</span>
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                                <span className={`text-2xl font-semibold tabular-nums ${step.color}`}>
+                                  <AnimatedCostValue from={step.extra.from} to={step.extra.to} /> {step.extra.unit}
+                                </span>
+                                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white">{step.extra.change}</span>
+                              </div>
+                              <div className="mt-1 text-xs text-gray-400">{step.extra.note}</div>
+                            </div>
+                          </motion.div>
+                        )}
+                        {step.extra?.type === 'chips' && (
+                          <motion.div
+                            initial="hidden"
+                            animate="show"
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } } }}
+                            className="mt-4"
+                          >
+                            <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">{step.extra.label}</div>
+                            <div className="flex flex-wrap gap-3">
+                              {step.extra.items.map((item) => {
+                                const isSelected = selectedDroneModel === item.name;
+                                return (
+                                  <motion.div
+                                    key={item.name}
+                                    variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, show: { opacity: 1, y: 0, scale: 1 } }}
+                                    whileHover={{ scale: 1.06, y: -2 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedDroneModel(isSelected ? null : item.name);
+                                      setDronePulseKeys((prev) => ({ ...prev, [item.name]: (prev[item.name] || 0) + 1 }));
+                                    }}
+                                    className={`flex items-center gap-2.5 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors ${
+                                      isSelected ? 'border-white/40 bg-white/10 shadow-lg' : 'border-white/10 bg-black/20 hover:bg-white/5'
+                                    }`}
+                                  >
+                                    <PulseIcon
+                                      icon={item.icon}
+                                      colorClass={step.color}
+                                      bgSoftClass={step.bgSoft}
+                                      pulse={item.pulse}
+                                      pulseKey={dronePulseKeys[item.name] || 0}
+                                    />
+                                    <div>
+                                      <div className="text-sm font-semibold text-white leading-tight">{item.name}</div>
+                                      <div className="text-[11px] text-gray-400 leading-tight">{item.role}</div>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -403,8 +808,23 @@ export default function App() {
                   className="absolute inset-0 bg-gradient-to-br from-[#2B5219] via-[#60795A] to-[#15240D]"
                 >
                   <FieldLines className="absolute inset-0 w-full h-full text-white/15" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+
+                  <AnimatePresence>
+                    {selectedModelDetail && (
+                      <motion.div
+                        key={selectedModelDetail.name}
+                        initial={{ opacity: 0, scale: 0.7, rotate: -8 }}
+                        animate={{ opacity: 0.16, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.7 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute top-6 right-6 text-white pointer-events-none"
+                      >
+                        <selectedModelDetail.icon className="h-28 w-28" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Overlay UI based on step */}
                   <div className="absolute bottom-8 left-8 right-8">
                     <div className="bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-white/20">
@@ -413,6 +833,19 @@ export default function App() {
                         <span className="font-mono text-sm text-brand-light tracking-wider uppercase">Fase Attiva</span>
                       </div>
                       <h4 className="text-2xl text-white">{workflowSteps[activeWorkflowStep].title}</h4>
+                      <AnimatePresence mode="wait">
+                        {selectedModelDetail && (
+                          <motion.p
+                            key={selectedModelDetail.name}
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="text-sm text-gray-300 mt-2 overflow-hidden"
+                          >
+                            <span className="text-white font-semibold">{selectedModelDetail.name}</span> — {selectedModelDetail.detail}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </motion.div>
@@ -428,7 +861,7 @@ export default function App() {
         <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
         <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <FadeIn direction="left">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
@@ -454,6 +887,60 @@ export default function App() {
                   <div>
                     <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
                     <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
+                    <div className="relative mt-4 h-36 rounded-xl bg-gradient-to-br from-brand-bg to-white border border-gray-100 overflow-hidden cursor-default">
+                      <svg className="absolute inset-0 w-full h-full opacity-50" aria-hidden="true">
+                        <defs>
+                          <pattern id="progetto-dotgrid" width="14" height="14" patternUnits="userSpaceOnUse">
+                            <circle cx="1.5" cy="1.5" r="1.2" fill="#60795A" />
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#progetto-dotgrid)" />
+                      </svg>
+                      {[
+                        { name: "Milano", left: "26%", top: "58%" },
+                        { name: "Bergamo", left: "54%", top: "26%" },
+                        { name: "Cremona", left: "42%", top: "80%" },
+                        { name: "Mantova", left: "76%", top: "60%" }
+                      ].map((city, i) => (
+                        <motion.div
+                          key={city.name}
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.1, duration: 0.4 }}
+                          onMouseEnter={() => setHoveredFieldCity(city.name)}
+                          onMouseLeave={() => setHoveredFieldCity(null)}
+                          className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center cursor-default"
+                          style={{ left: city.left, top: city.top }}
+                        >
+                          <div className="absolute -inset-3" />
+                          <div className="relative h-5 w-5">
+                            <motion.span
+                              animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                              transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay: i * 0.3 }}
+                              className="absolute inset-0 rounded-full bg-brand-light"
+                            />
+                            <PinIcon className="relative h-5 w-5 text-brand-accent" />
+                          </div>
+                          <span className="mt-0.5 whitespace-nowrap rounded-full bg-white/80 px-1.5 text-[10px] font-medium text-brand-dark">{city.name}</span>
+                          <div className="flex gap-0.5 mt-0.5 h-2.5">
+                            <AnimatePresence>
+                              {hoveredFieldCity === city.name && [0, 1, 2].map((j) => (
+                                <motion.span
+                                  key={j}
+                                  initial={{ opacity: 0, scale: 0, y: 4 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0, y: 4 }}
+                                  transition={{ delay: j * 0.06, duration: 0.25, ease: "easeOut" }}
+                                >
+                                  <Sprout className="h-2.5 w-2.5 text-brand-light" />
+                                </motion.span>
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -461,9 +948,14 @@ export default function App() {
 
             <FadeIn direction="right">
               <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative">
-                <div className="absolute -top-6 -right-6 bg-brand-accent text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shadow-lg transform rotate-12">
-                  <span className="text-2xl"><CountUp to={30} /></span>
-                  <span className="text-xs uppercase">Mesi</span>
+                <div className="absolute -top-7 -right-6 w-24 h-28 transform rotate-6 drop-shadow-lg">
+                  <svg viewBox="0 0 100 120" className="w-full h-full">
+                    <path d="M50 4C26.2 4 7 23.2 7 47c0 32 43 69 43 69s43-37 43-69C93 23.2 73.8 4 50 4z" fill="#2B5219" />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center text-white font-bold" style={{ paddingTop: '30%' }}>
+                    <span className="text-2xl"><CountUp to={30} /></span>
+                    <span className="text-xs uppercase">Mesi</span>
+                  </div>
                 </div>
                 <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
                 <ul className="space-y-4">
@@ -504,7 +996,7 @@ export default function App() {
 
       {/* Divulgazione e Risultati */}
       <section id="risultati" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <FadeIn>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
@@ -576,7 +1068,7 @@ export default function App() {
 
       {/* Contatti */}
       <section id="contatti" className="py-24 bg-brand-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
@@ -641,7 +1133,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-brand-dark text-gray-400 py-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4 group cursor-pointer w-fit">
