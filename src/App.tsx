@@ -6,8 +6,8 @@ import {
   Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, Cpu, CheckCircle2,
   Info, AlertTriangle, Cookie
 } from 'lucide-react';
-import Hero3DBackground from './components/Hero3DBackground';
 import DroneCursor from './components/DroneCursor';
+import MapCarousel from './components/MapCarousel';
 
 const FadeIn: React.FC<{ children: React.ReactNode, delay?: number, className?: string, direction?: "up" | "left" | "right" }> = ({ children, delay = 0, className = "", direction = "up" }) => {
   const directions = {
@@ -272,15 +272,29 @@ export default function App() {
                 </div>
               </motion.div>
 
-              {/* 3D Drone Visual */}
-              <motion.div 
+              {/* Hero Images: satellite (scala macro) + drone (scala micro) */}
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1 }}
-                className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 flex items-center justify-center rounded-3xl overflow-hidden"
+                className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 mb-10 lg:mb-0"
               >
-                 <div className="absolute inset-0 bg-brand-light/5 rounded-full blur-3xl transform scale-150"></div>
-                 <Hero3DBackground droneBodyColor="#15240D" dronePropColor="#60795A" droneArmColor="#A0AEC0" />
+                <div className="absolute inset-0 lg:left-12 rounded-3xl overflow-hidden shadow-xl">
+                  <img src="/hero-satellite.jpg" alt="Immagine satellitare Sentinel-2 dei campi attorno al Po, presso Piacenza" className="w-full h-full object-cover" />
+                  <span className="absolute top-4 right-4 bg-white/90 backdrop-blur text-brand-dark text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">Satellite</span>
+                </div>
+                <p className="absolute top-full right-0 mt-2 w-[50%] lg:w-[62%] text-right text-[11px] leading-snug text-brand-text/60">
+                  Contiene dati Copernicus Sentinel modificati (2022), elaborati da ESA
+                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="absolute -bottom-10 left-0 lg:-bottom-8 w-[45%] lg:w-[36%] aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-2xl"
+                >
+                  <img src="/hero-drone.jpg" alt="Drone multispettrale in volo sopra campi coltivati" className="w-full h-full object-cover scale-[2.6] origin-[50%_54%]" />
+                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-brand-dark text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">Drone</span>
+                </motion.div>
               </motion.div>
 
             </div>
@@ -519,6 +533,17 @@ export default function App() {
             </div>
           </FadeIn>
 
+          {/* Mappe di esempio (dati sintetici, nessuna azienda reale) */}
+          <FadeIn>
+            <div className="mb-16">
+              <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Dal Satellite al Drone, in 5 Passi</h3>
+              <p className="text-gray-600 mb-8 max-w-3xl">
+                Le immagini satellitari storiche e quelle della stagione in corso mostrano dove il campo varia: guidano i prelievi di suolo, poi il drone vola solo dove serve e guida una distribuzione di biostimolanti su misura. Esempio illustrativo su campi immaginari generati al computer: non riproduce dati di aziende reali.
+              </p>
+              <MapCarousel />
+            </div>
+          </FadeIn>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
             <FadeIn delay={0.1}>
@@ -675,7 +700,7 @@ export default function App() {
             </div>
             <div>
               <h4 className="text-white mb-4">Partner di Progetto</h4>
-              <div className="space-y-4">
+              <div className="flex flex-col items-center gap-4 w-fit">
                 <div className="bg-white p-3 rounded-lg w-fit">
                   <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain" />
                 </div>
