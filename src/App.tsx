@@ -442,12 +442,14 @@ export default function App() {
                     <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
                     <div>
                       <h4 className="text-gray-900">Partnership d'Eccellenza</h4>
-                      <p className="text-sm text-gray-600 mt-1">Farm Consulting (Capofila), UCSC DI.PRO.VE.S (Ricerca), CITIMAP (Tecnologia) e 6 aziende agricole lombarde.</p>
+                      <p className="text-sm text-gray-600 mt-1">Farm Consulting, UCSC DI.PRO.VE.S, CITIMAP e 6 aziende agricole lombarde.</p>
                     </div>
                   </div>
-                  <div className="pt-2 border-t border-gray-50 flex flex-wrap items-center gap-x-8 gap-y-4">
-                    <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-9 max-w-full object-contain" />
-                    <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-16 object-contain" />
+                  <div className="pt-2 border-t border-gray-50 flex flex-col items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                      <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-9 max-w-full object-contain" />
+                      <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-16 object-contain" />
+                    </div>
                     <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain brightness-0 opacity-80" />
                   </div>
                 </div>
@@ -472,28 +474,28 @@ export default function App() {
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
                     <div>
-                      <strong className="block text-gray-900 text-sm">Mappe di Stabilità (WP2)</strong>
+                      <strong className="block text-gray-900 text-sm">Mappe di Stabilità</strong>
                       <span className="text-gray-600 text-sm">6 mappe validate per le aziende partner.</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
                     <div>
-                      <strong className="block text-gray-900 text-sm">Archivio Storico (WP2)</strong>
+                      <strong className="block text-gray-900 text-sm">Archivio Storico</strong>
                       <span className="text-gray-600 text-sm">Database Sentinel-2 strutturato e pronto all'uso.</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
                     <div>
-                      <strong className="block text-gray-900 text-sm">Protocolli DSS (WP5)</strong>
+                      <strong className="block text-gray-900 text-sm">Protocolli DSS</strong>
                       <span className="text-gray-600 text-sm">Regole validate per rateo variabile (drone+satellite).</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
                     <div>
-                      <strong className="block text-gray-900 text-sm">Baseline Scientifica (WP7)</strong>
+                      <strong className="block text-gray-900 text-sm">Baseline Scientifica</strong>
                       <span className="text-gray-600 text-sm">Linee guida per la consulenza agronomica regionale.</span>
                     </div>
                   </li>
@@ -674,22 +676,13 @@ export default function App() {
             <div>
               <h4 className="text-white mb-4">Partner di Progetto</h4>
               <div className="space-y-4">
-                <div>
-                  <span className="block text-xs uppercase tracking-wider mb-2">Capofila</span>
-                  <div className="bg-white p-3 rounded-lg w-fit">
-                    <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain" />
-                  </div>
+                <div className="bg-white p-3 rounded-lg w-fit">
+                  <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain" />
                 </div>
-                <div>
-                  <span className="block text-xs uppercase tracking-wider mb-2">Partner Scientifico</span>
-                  <div className="bg-white p-3 rounded-lg w-fit">
-                    <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
-                  </div>
+                <div className="bg-white p-3 rounded-lg w-fit">
+                  <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
                 </div>
-                <div>
-                  <span className="block text-xs uppercase tracking-wider mb-2">Partner Tecnologico</span>
-                  <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain" />
-                </div>
+                <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain" />
               </div>
             </div>
           </div>
