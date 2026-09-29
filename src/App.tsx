@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { 
-  Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
+  Leaf, Sprout, TestTube, TrendingDown, Users, BookOpen,
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
-  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, Cpu, CheckCircle2,
+  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, CheckCircle2,
   Info, AlertTriangle, Cookie
 } from 'lucide-react';
 import DroneCursor from './components/DroneCursor';
@@ -72,61 +72,9 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
   );
 };
 
-const DroneIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="3" />
-    <path d="M14.12 14.12 17 17" />
-    <path d="M9.88 14.12 7 17" />
-    <path d="M14.12 9.88 17 7" />
-    <path d="M9.88 9.88 7 7" />
-    <circle cx="7" cy="7" r="2" />
-    <circle cx="17" cy="7" r="2" />
-    <circle cx="7" cy="17" r="2" />
-    <circle cx="17" cy="17" r="2" />
-  </svg>
-);
-
-/**
- * Decorative fan of curved lines echoing the "campo" (field furrows)
- * graphic at the base of the brand logo, converging toward an
- * off-canvas point below the viewBox.
- */
-const FieldLines = ({ className = "" }: { className?: string }) => {
-  const apexX = 350, apexY = 610, topY = 90, maxSpreadX = 310, bow = 0.95, count = 7;
-  const ctrlY = apexY - (apexY - topY) * 0.55;
-  const lines = Array.from({ length: count }, (_, i) => {
-    const frac = (i + 1) / count;
-    return { endX: apexX + frac * maxSpreadX, ctrlX: apexX + frac * maxSpreadX * bow };
-  });
-
-  return (
-    <svg viewBox="0 0 700 500" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
-      <g fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        {lines.map(({ endX, ctrlX }, i) => (
-          <React.Fragment key={i}>
-            <path d={`M ${apexX} ${apexY} Q ${ctrlX} ${ctrlY} ${endX} ${topY}`} />
-            <path d={`M ${apexX} ${apexY} Q ${2 * apexX - ctrlX} ${ctrlY} ${2 * apexX - endX} ${topY}`} />
-          </React.Fragment>
-        ))}
-      </g>
-    </svg>
-  );
-};
-
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeWorkflowStep, setActiveWorkflowStep] = useState(0);
-  const [isHoveringWorkflow, setIsHoveringWorkflow] = useState(false);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
 
   useEffect(() => {
@@ -147,27 +95,10 @@ export default function App() {
     setShowCookieBanner(false);
   };
 
-  // Auto-advance workflow steps for dynamism
-  useEffect(() => {
-    if (isHoveringWorkflow) return;
-    const timer = setInterval(() => {
-      setActiveWorkflowStep((prev) => (prev + 1) % 4);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [isHoveringWorkflow]);
-
   const navLinks = [
     { name: 'Il Drone', href: '#drone' },
-    { name: 'Come Funziona', href: '#workflow' },
     { name: 'Il Progetto', href: '#progetto' },
     { name: 'Divulgazione', href: '#risultati' },
-  ];
-
-  const workflowSteps = [
-    { title: "1. Mappatura Satellitare", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
-    { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
-    { title: "4. Protocolli DSS", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
   ];
 
   return (
@@ -265,10 +196,6 @@ export default function App() {
                     Scopri i Vantaggi
                     <ChevronRight className="ml-2 -mr-1 h-4 w-4" />
                   </a>
-                  <a href="#workflow" className="inline-flex items-center justify-center px-8 py-3.5 border border-brand-text/20 text-[15px] font-semibold rounded-full text-brand-text hover:bg-brand-text/5 hover:text-brand-text transition-all">
-                    Come Funziona
-                    <DroneIcon className="ml-2 -mr-1 h-4 w-4" />
-                  </a>
                 </div>
               </motion.div>
 
@@ -346,176 +273,6 @@ export default function App() {
                 </div>
               </FadeIn>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Come Funziona (Interactive Workflow) */}
-      <section id="workflow" className="py-24 bg-brand-dark text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
-              <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-                Dallo spazio al singolo filo d'erba: ecco come i dati si trasformano in azione.
-              </p>
-            </div>
-          </FadeIn>
-
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-            onMouseEnter={() => setIsHoveringWorkflow(true)}
-            onMouseLeave={() => setIsHoveringWorkflow(false)}
-          >
-            {/* Steps Navigation */}
-            <div className="lg:col-span-5 space-y-4">
-              {workflowSteps.map((step, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => setActiveWorkflowStep(idx)}
-                  className={`cursor-pointer p-6 rounded-2xl transition-all duration-300 border-2 ${
-                    activeWorkflowStep === idx 
-                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2' 
-                      : 'bg-transparent border-transparent hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}>
-                      <step.icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h3 className={`text-xl ${activeWorkflowStep === idx ? 'text-white' : 'text-gray-400'}`}>
-                        {step.title}
-                      </h3>
-                    </div>
-                  </div>
-                  <AnimatePresence>
-                    {activeWorkflowStep === idx && (
-                      <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 text-gray-300 pl-16"
-                      >
-                        {step.desc}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
-
-            {/* Dynamic Visualizer */}
-            <div className="lg:col-span-7 relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeWorkflowStep}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0 bg-gradient-to-br from-[#2B5219] via-[#60795A] to-[#15240D]"
-                >
-                  <FieldLines className="absolute inset-0 w-full h-full text-white/15" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  
-                  {/* Overlay UI based on step */}
-                  <div className="absolute bottom-8 left-8 right-8">
-                    <div className="bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-white/20">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-3 h-3 rounded-full ${workflowSteps[activeWorkflowStep].bg} animate-pulse`}></div>
-                        <span className="font-mono text-sm text-brand-light tracking-wider uppercase">Fase Attiva</span>
-                      </div>
-                      <h4 className="text-2xl text-white">{workflowSteps[activeWorkflowStep].title}</h4>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Il Progetto (Context) */}
-      <section id="progetto" className="py-24 bg-brand-bg relative overflow-hidden">
-        {/* Decorative elements */}
-        <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
-        <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <FadeIn direction="left">
-              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
-              <p className="text-lg text-gray-700 mb-6">
-                Finanziato da <strong>Regione Lombardia (PEI AGRI SRG01)</strong>, il progetto unisce ricerca scientifica e pratica agricola per dimostrare la fattibilità economica e ambientale delle nuove tecnologie.
-              </p>
-              
-              <div className="space-y-6 mt-8">
-                <div className="flex flex-col gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
-                    <div>
-                      <h4 className="text-gray-900">Partnership d'Eccellenza</h4>
-                      <p className="text-sm text-gray-600 mt-1">Farm Consulting, UCSC DI.PRO.VE.S, CITIMAP e 6 aziende agricole lombarde.</p>
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-gray-50 flex flex-col items-center gap-4">
-                    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-                      <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-9 max-w-full object-contain" />
-                      <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-16 object-contain" />
-                    </div>
-                    <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain brightness-0 opacity-80" />
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-                  <div className="bg-brand-light/10 p-3 rounded-lg text-brand-light"><MapPin className="h-6 w-6" /></div>
-                  <div>
-                    <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
-                    <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="right">
-              <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative">
-                <div className="absolute -top-6 -right-6 bg-brand-accent text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shadow-lg transform rotate-12">
-                  <span className="text-2xl"><CountUp to={30} /></span>
-                  <span className="text-xs uppercase">Mesi</span>
-                </div>
-                <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-gray-900 text-sm">Mappe di Stabilità</strong>
-                      <span className="text-gray-600 text-sm">6 mappe validate per le aziende partner.</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-gray-900 text-sm">Archivio Storico</strong>
-                      <span className="text-gray-600 text-sm">Database Sentinel-2 strutturato e pronto all'uso.</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-gray-900 text-sm">Protocolli DSS</strong>
-                      <span className="text-gray-600 text-sm">Regole validate per rateo variabile (drone+satellite).</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-gray-900 text-sm">Baseline Scientifica</strong>
-                      <span className="text-gray-600 text-sm">Linee guida per la consulenza agronomica regionale.</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </FadeIn>
           </div>
         </div>
       </section>
@@ -600,6 +357,90 @@ export default function App() {
               </div>
             </div>
           </FadeIn>
+        </div>
+      </section>
+
+      {/* Il Progetto (Context) */}
+      <section id="progetto" className="py-24 bg-brand-bg relative overflow-hidden">
+        {/* Decorative elements */}
+        <Parallax speed={0.2} className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-brand-light/10 rounded-full blur-3xl"></Parallax>
+        <Parallax speed={0.35} className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-brand-accent/10 rounded-full blur-3xl"></Parallax>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <FadeIn direction="left">
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mb-6">Il Progetto BioDroneConsulting</h2>
+              <p className="text-lg text-gray-700 mb-6">
+                Finanziato da <strong>Regione Lombardia (PEI AGRI SRG01)</strong>, il progetto unisce ricerca scientifica e pratica agricola per dimostrare la fattibilità economica e ambientale delle nuove tecnologie.
+              </p>
+              
+              <div className="space-y-6 mt-8">
+                <div className="flex flex-col gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
+                    <div>
+                      <h4 className="text-gray-900">Partnership d'Eccellenza</h4>
+                      <p className="text-sm text-gray-600 mt-1">Farm Consulting, UCSC DI.PRO.VE.S, CITIMAP e 6 aziende agricole lombarde.</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-gray-50 flex flex-col items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                      <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-9 max-w-full object-contain" />
+                      <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-16 object-contain" />
+                    </div>
+                    <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain brightness-0 opacity-80" />
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                  <div className="bg-brand-light/10 p-3 rounded-lg text-brand-light"><MapPin className="h-6 w-6" /></div>
+                  <div>
+                    <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
+                    <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+
+            <FadeIn direction="right">
+              <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative">
+                <div className="absolute -top-6 -right-6 bg-brand-accent text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shadow-lg transform rotate-12">
+                  <span className="text-2xl"><CountUp to={30} /></span>
+                  <span className="text-xs uppercase">Mesi</span>
+                </div>
+                <h3 className="text-2xl text-brand-dark mb-6 border-b pb-4">Output Attesi</h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-gray-900 text-sm">Mappe di Stabilità</strong>
+                      <span className="text-gray-600 text-sm">6 mappe validate per le aziende partner.</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-gray-900 text-sm">Archivio Storico</strong>
+                      <span className="text-gray-600 text-sm">Database Sentinel-2 strutturato e pronto all'uso.</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-gray-900 text-sm">Protocolli DSS</strong>
+                      <span className="text-gray-600 text-sm">Regole validate per rateo variabile (drone+satellite).</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-gray-900 text-sm">Baseline Scientifica</strong>
+                      <span className="text-gray-600 text-sm">Linee guida per la consulenza agronomica regionale.</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </FadeIn>
+          </div>
         </div>
       </section>
 
@@ -693,7 +534,6 @@ export default function App() {
               <h4 className="text-white mb-4">Link Rapidi</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="#drone" className="hover:text-white transition-colors">Perché il Drone</a></li>
-                <li><a href="#workflow" className="hover:text-white transition-colors">Come Funziona</a></li>
                 <li><a href="#risultati" className="hover:text-white transition-colors">Materiale Divulgativo</a></li>
                 <li><a href="#contatti" className="hover:text-white transition-colors">Contatti</a></li>
               </ul>
