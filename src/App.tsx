@@ -76,6 +76,7 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -89,6 +90,20 @@ export default function App() {
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Blocca lo scroll della pagina e permette di chiudere con Esc quando il popup del calendario è aperto
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsCalendarOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCalendarOpen]);
 
   const handleCookieConsent = (accepted: boolean) => {
     localStorage.setItem('cookieConsent', accepted ? 'accepted' : 'rejected');
@@ -338,9 +353,9 @@ export default function App() {
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Partecipazione a fiere di settore (SIA) e incontri in campo con i Gruppi Operativi per mostrare il drone in azione.
                 </p>
-                <a href="#calendario" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                <button onClick={() => setIsCalendarOpen(true)} className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
                   Calendario Eventi <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
+                </button>
               </div>
             </FadeIn>
 
@@ -371,63 +386,6 @@ export default function App() {
               </div>
             </div>
           </FadeIn>
-
-          {/* Calendario Eventi */}
-          <div id="calendario" className="mt-16 scroll-mt-28">
-            <FadeIn>
-              <div className="text-center mb-10">
-                <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Calendario Eventi</h3>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Fiere di settore, incontri in campo e webinar dove poter vedere il drone in azione.
-                </p>
-              </div>
-            </FadeIn>
-
-            {upcomingEvents.length === 0 ? (
-              <FadeIn>
-                <div className="flex flex-col items-center text-center gap-3 bg-brand-bg border border-gray-100 rounded-2xl py-12 px-6">
-                  <Calendar className="h-10 w-10 text-brand-light" />
-                  <p className="text-gray-700 max-w-md">
-                    Nessun evento in programma al momento. Torna a trovarci presto: qui pubblicheremo fiere, incontri in campo e webinar del progetto.
-                  </p>
-                </div>
-              </FadeIn>
-            ) : (
-              <div className="space-y-4 max-w-3xl mx-auto">
-                {upcomingEvents.map((event, idx) => {
-                  const eventDate = new Date(event.date);
-                  const day = eventDate.getDate();
-                  const month = eventDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
-                  return (
-                    <FadeIn key={`${event.title}-${event.date}`} delay={idx * 0.1}>
-                      <div className="flex items-start gap-5 bg-brand-bg border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-all duration-300">
-                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0">
-                          <span className="text-[11px] uppercase tracking-wide opacity-80">{month}</span>
-                          <span className="text-2xl font-bold leading-none">{day}</span>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-lg text-gray-900">{event.title}</h4>
-                          {event.location && (
-                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                              <MapPin className="h-3.5 w-3.5" /> {event.location}
-                            </p>
-                          )}
-                          {event.description && (
-                            <p className="text-gray-600 mt-2">{event.description}</p>
-                          )}
-                          {event.link && (
-                            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark mt-3">
-                              Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </FadeIn>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
@@ -606,7 +564,7 @@ export default function App() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#drone" className="hover:text-white transition-colors">Perché il Drone</a></li>
                 <li><a href="#risultati" className="hover:text-white transition-colors">Materiale Divulgativo</a></li>
-                <li><a href="#calendario" className="hover:text-white transition-colors">Calendario Eventi</a></li>
+                <li><button onClick={() => setIsCalendarOpen(true)} className="hover:text-white transition-colors">Calendario Eventi</button></li>
                 <li><a href="#contatti" className="hover:text-white transition-colors">Contatti</a></li>
               </ul>
             </div>
@@ -626,6 +584,84 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Popup Calendario Eventi */}
+      <AnimatePresence>
+        {isCalendarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50"
+            onClick={() => setIsCalendarOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-8"
+            >
+              <button
+                onClick={() => setIsCalendarOpen(false)}
+                aria-label="Chiudi"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Calendario Eventi</h3>
+                <p className="text-gray-600">
+                  Fiere di settore, incontri in campo e webinar dove poter vedere il drone in azione.
+                </p>
+              </div>
+
+              {upcomingEvents.length === 0 ? (
+                <div className="flex flex-col items-center text-center gap-3 bg-brand-bg border border-gray-100 rounded-2xl py-12 px-6">
+                  <Calendar className="h-10 w-10 text-brand-light" />
+                  <p className="text-gray-700 max-w-md">
+                    Nessun evento in programma al momento. Torna a trovarci presto: qui pubblicheremo fiere, incontri in campo e webinar del progetto.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingEvents.map((event) => {
+                    const eventDate = new Date(event.date);
+                    const day = eventDate.getDate();
+                    const month = eventDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
+                    return (
+                      <div key={`${event.title}-${event.date}`} className="flex items-start gap-5 bg-brand-bg border border-gray-100 rounded-2xl p-6">
+                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0">
+                          <span className="text-[11px] uppercase tracking-wide opacity-80">{month}</span>
+                          <span className="text-2xl font-bold leading-none">{day}</span>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg text-gray-900">{event.title}</h4>
+                          {event.location && (
+                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin className="h-3.5 w-3.5" /> {event.location}
+                            </p>
+                          )}
+                          {event.description && (
+                            <p className="text-gray-600 mt-2">{event.description}</p>
+                          )}
+                          {event.link && (
+                            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark mt-3">
+                              Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Cookie Banner */}
       <AnimatePresence>
