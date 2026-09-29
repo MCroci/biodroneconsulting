@@ -23,7 +23,18 @@ const STEPS = [
     short: 'Storico',
     title: 'Variabilità storica',
     desc: 'Più anni di immagini satellitari rivelano le zone dove la coltura cresce sempre bene, sempre meno, o cambia di anno in anno.',
-    legend: { kind: 'swatches' as const, items: STABILITY_SWATCHES },
+    legend: {
+      kind: 'swatches' as const,
+      items: STABILITY_SWATCHES,
+      // Varianti con una sola classe colorata e le altre sfumate in grigio: la legenda
+      // interattiva le mostra cliccando una voce (vedi scripts/synthetic_maps.py, storico_map).
+      isolateVariants: {
+        'Sempre alto': '/mappe/mappa-1-storico-iso-sempre-alto.webp',
+        'Nella media': '/mappe/mappa-1-storico-iso-nella-media.webp',
+        'Sempre basso': '/mappe/mappa-1-storico-iso-sempre-basso.webp',
+        Variabile: '/mappe/mappa-1-storico-iso-variabile.webp',
+      } as Record<string, string>,
+    },
   },
   {
     src: '/mappe/mappa-2-campionamento.webp',
@@ -40,6 +51,16 @@ const STEPS = [
         { style: 'ring-thin' as const, color: '#7A7A70', label: 'Griglia tradizionale (1/ha)' },
       ],
       swatches: STABILITY_SWATCHES,
+      // Varianti con un solo tipo di prelievo o una sola classe storica evidenziati (gli altri
+      // nascosti o sfumati): generate da scripts/synthetic_maps.py, campionamento_map.
+      isolateVariants: {
+        'Prelievo mirato': '/mappe/mappa-2-campionamento-iso-prelievo-mirato.webp',
+        'Griglia tradizionale (1/ha)': '/mappe/mappa-2-campionamento-iso-griglia-tradizionale-1-ha.webp',
+        'Sempre alto': '/mappe/mappa-2-campionamento-iso-sempre-alto.webp',
+        'Nella media': '/mappe/mappa-2-campionamento-iso-nella-media.webp',
+        'Sempre basso': '/mappe/mappa-2-campionamento-iso-sempre-basso.webp',
+        Variabile: '/mappe/mappa-2-campionamento-iso-variabile.webp',
+      } as Record<string, string>,
     },
   },
   {
@@ -82,6 +103,14 @@ const STEPS = [
         { style: 'dashed-line' as const, color: '#15240D', label: 'Trasferimento' },
         { style: 'marker-square' as const, color: '#15240D', label: 'Decollo' },
       ],
+      // Varianti con un solo elemento del piano di volo visibile alla volta: generate da
+      // scripts/synthetic_maps.py, volo_map.
+      isolateVariants: {
+        'Area da sorvolare': '/mappe/mappa-4-volo-iso-area-da-sorvolare.webp',
+        'Passate di rilievo': '/mappe/mappa-4-volo-iso-passate-di-rilievo.webp',
+        Trasferimento: '/mappe/mappa-4-volo-iso-trasferimento.webp',
+        Decollo: '/mappe/mappa-4-volo-iso-decollo.webp',
+      } as Record<string, string>,
     },
   },
   {
@@ -99,20 +128,77 @@ const STEPS = [
         { color: '#DE9A4C', label: 'Dose +25%' },
         { color: '#A33A1F', label: 'Dose +50%' },
       ],
+      // Varianti con una sola classe di dose colorata e le altre sfumate in grigio: generate
+      // da scripts/synthetic_maps.py, biostim_map.
+      isolateVariants: {
+        'Dose −25%': '/mappe/mappa-5-biostimolanti-iso-dose-meno25.webp',
+        'Dose standard': '/mappe/mappa-5-biostimolanti-iso-dose-standard.webp',
+        'Dose +25%': '/mappe/mappa-5-biostimolanti-iso-dose-piu25.webp',
+        'Dose +50%': '/mappe/mappa-5-biostimolanti-iso-dose-piu50.webp',
+      } as Record<string, string>,
     },
   },
 ];
 
-/** Chip di legenda con un piccolo campione visivo (colore, linea, marker...) + etichetta. */
-const LegendChip: React.FC<{ swatch: React.ReactNode; label: string }> = ({ swatch, label }) => (
-  <motion.span
+/** Chip di legenda con un piccolo campione visivo (colore, linea, marker...) + etichetta.
+ * Se riceve onClick diventa cliccabile: evidenzia solo quella voce sulla mappa (le altre
+ * sfumano), vedi isoProps più sotto. */
+const LegendChip: React.FC<{
+  swatch: React.ReactNode;
+  label: string;
+  active?: boolean;
+  dimmed?: boolean;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}> = ({ swatch, label, active, dimmed, onClick, onMouseEnter, onMouseLeave }) => (
+  <motion.button
+    type="button"
+    onClick={onClick}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
     whileHover={{ scale: 1.06, y: -1 }}
     whileTap={{ scale: 0.97 }}
-    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 shadow-sm cursor-default"
+    animate={{ opacity: dimmed ? 0.45 : 1 }}
+    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs shadow-sm transition-colors ${
+      active ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-200 bg-white text-gray-700'
+    } ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
   >
     {swatch}
     {label}
-  </motion.span>
+  </motion.button>
+);
+
+/** Props di interazione per una LegendChip cliccabile: isola quella voce sulla mappa
+ * (vedi isolateVariants in STEPS) tramite le stesse funzioni hover/pin usate per la scala NDVI. */
+function isoProps(
+  isolateVariants: Record<string, string> | undefined,
+  label: string,
+  activeIso: string | null | undefined,
+  pinnedIso: string | null | undefined,
+  onHoverIso: ((t: string | null) => void) | undefined,
+  onPinIso: ((t: string | null) => void) | undefined
+) {
+  if (!isolateVariants) return {};
+  return {
+    active: activeIso === label,
+    dimmed: !!activeIso && activeIso !== label,
+    onClick: () => onPinIso?.(pinnedIso === label ? null : label),
+    onMouseEnter: () => onHoverIso?.(label),
+    onMouseLeave: () => onHoverIso?.(null),
+  };
+}
+
+/** Riga di suggerimento/stato sotto una legenda isolabile (swatches/sampling/mixed). */
+const IsolateHint: React.FC<{ activeIso: string | null | undefined; pinnedIso: string | null | undefined }> = ({
+  activeIso,
+  pinnedIso,
+}) => (
+  <p className="text-xs text-brand-accent mt-2 min-h-[1em]">
+    {activeIso
+      ? `In evidenza: ${activeIso}${pinnedIso === activeIso ? ' · fissato, clicca per sbloccare' : ' (clicca per fissare)'}`
+      : 'Clicca una voce per evidenziarla sulla mappa'}
+  </p>
 );
 
 const ColorSwatch: React.FC<{ color: string }> = ({ color }) => (
@@ -149,19 +235,35 @@ function Legend({
   pinnedTick,
   onHoverTick,
   onPinTick,
+  activeIso,
+  pinnedIso,
+  onHoverIso,
+  onPinIso,
 }: {
   legend: StepLegend;
   activeTick?: string | null;
   pinnedTick?: string | null;
   onHoverTick?: (t: string | null) => void;
   onPinTick?: (t: string | null) => void;
+  activeIso?: string | null;
+  pinnedIso?: string | null;
+  onHoverIso?: (t: string | null) => void;
+  onPinIso?: (t: string | null) => void;
 }) {
   if (legend.kind === 'swatches') {
     return (
-      <div className="flex flex-wrap gap-2">
-        {legend.items.map((item) => (
-          <LegendChip key={item.label} swatch={<ColorSwatch color={item.color} />} label={item.label} />
-        ))}
+      <div>
+        <div className="flex flex-wrap gap-2">
+          {legend.items.map((item) => (
+            <LegendChip
+              key={item.label}
+              swatch={<ColorSwatch color={item.color} />}
+              label={item.label}
+              {...isoProps(legend.isolateVariants, item.label, activeIso, pinnedIso, onHoverIso, onPinIso)}
+            />
+          ))}
+        </div>
+        {legend.isolateVariants && <IsolateHint activeIso={activeIso} pinnedIso={pinnedIso} />}
       </div>
     );
   }
@@ -172,14 +274,25 @@ function Legend({
         <p className="text-sm font-semibold text-brand-dark mb-2">{legend.caption}</p>
         <div className="flex flex-wrap gap-2 mb-2">
           {legend.markers.map((m) => (
-            <LegendChip key={m.label} swatch={<RingMarker color={m.color} thick={m.style === 'ring-thick'} />} label={m.label} />
+            <LegendChip
+              key={m.label}
+              swatch={<RingMarker color={m.color} thick={m.style === 'ring-thick'} />}
+              label={m.label}
+              {...isoProps(legend.isolateVariants, m.label, activeIso, pinnedIso, onHoverIso, onPinIso)}
+            />
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
           {legend.swatches.map((item) => (
-            <LegendChip key={item.label} swatch={<ColorSwatch color={item.color} />} label={item.label} />
+            <LegendChip
+              key={item.label}
+              swatch={<ColorSwatch color={item.color} />}
+              label={item.label}
+              {...isoProps(legend.isolateVariants, item.label, activeIso, pinnedIso, onHoverIso, onPinIso)}
+            />
           ))}
         </div>
+        {legend.isolateVariants && <IsolateHint activeIso={activeIso} pinnedIso={pinnedIso} />}
       </div>
     );
   }
@@ -251,19 +364,23 @@ function Legend({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {legend.items.map((item) => (
-        <LegendChip
-          key={item.label}
-          swatch={
-            item.style === 'patch' ? <PatchSwatch color={item.color} fill={item.fill!} />
-            : item.style === 'dashed-line' ? <LineSwatch color={item.color} dashed />
-            : item.style === 'marker-square' ? <SquareMarker color={item.color} />
-            : <LineSwatch color={item.color} />
-          }
-          label={item.label}
-        />
-      ))}
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {legend.items.map((item) => (
+          <LegendChip
+            key={item.label}
+            swatch={
+              item.style === 'patch' ? <PatchSwatch color={item.color} fill={item.fill!} />
+              : item.style === 'dashed-line' ? <LineSwatch color={item.color} dashed />
+              : item.style === 'marker-square' ? <SquareMarker color={item.color} />
+              : <LineSwatch color={item.color} />
+            }
+            label={item.label}
+            {...isoProps(legend.isolateVariants, item.label, activeIso, pinnedIso, onHoverIso, onPinIso)}
+          />
+        ))}
+      </div>
+      {legend.isolateVariants && <IsolateHint activeIso={activeIso} pinnedIso={pinnedIso} />}
     </div>
   );
 }
@@ -272,14 +389,25 @@ export default function MapCarousel() {
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
   const [hoverTick, setHoverTick] = useState<string | null>(null);
   const [pinTick, setPinTick] = useState<string | null>(null);
+  const [hoverIso, setHoverIso] = useState<string | null>(null);
+  const [pinIso, setPinIso] = useState<string | null>(null);
   const step = STEPS[index];
   const activeTick = pinTick ?? hoverTick;
+  const activeIso = pinIso ?? hoverIso;
   const thresholdSrc =
     activeTick && step.legend.kind === 'scale' ? step.legend.thresholdVariants?.[activeTick] : undefined;
+  const isoVariants =
+    step.legend.kind === 'swatches' || step.legend.kind === 'sampling' || step.legend.kind === 'mixed'
+      ? step.legend.isolateVariants
+      : undefined;
+  const isolateSrc = activeIso ? isoVariants?.[activeIso] : undefined;
+  const overlaySrc = thresholdSrc ?? isolateSrc;
 
   useEffect(() => {
     setHoverTick(null);
     setPinTick(null);
+    setHoverIso(null);
+    setPinIso(null);
   }, [index]);
 
   const goTo = (next: number) => {
@@ -358,10 +486,10 @@ export default function MapCarousel() {
             />
           </AnimatePresence>
           <AnimatePresence>
-            {thresholdSrc && (
+            {overlaySrc && (
               <motion.img
-                key={thresholdSrc}
-                src={thresholdSrc}
+                key={overlaySrc}
+                src={overlaySrc}
                 alt=""
                 aria-hidden="true"
                 initial={{ opacity: 0 }}
@@ -401,6 +529,10 @@ export default function MapCarousel() {
                 pinnedTick={pinTick}
                 onHoverTick={setHoverTick}
                 onPinTick={setPinTick}
+                activeIso={activeIso}
+                pinnedIso={pinIso}
+                onHoverIso={setHoverIso}
+                onPinIso={setPinIso}
               />
             </motion.div>
           </AnimatePresence>
@@ -429,12 +561,16 @@ export default function MapCarousel() {
         </div>
       </div>
 
-      {/* Precarica le altre mappe (e le varianti della soglia NDVI) per un passaggio senza attese */}
+      {/* Precarica le altre mappe (e le varianti soglia/isola delle legende) per un passaggio senza attese */}
       <div className="hidden" aria-hidden="true">
         {STEPS.map((s) => <img key={s.src} src={s.src} alt="" />)}
-        {STEPS.flatMap((s) => (s.legend.kind === 'scale' ? Object.values(s.legend.thresholdVariants ?? {}) : [])).map(
-          (src) => <img key={src} src={src} alt="" />
-        )}
+        {STEPS.flatMap((s) => {
+          const variants =
+            s.legend.kind === 'scale' ? s.legend.thresholdVariants
+            : s.legend.kind === 'swatches' || s.legend.kind === 'sampling' || s.legend.kind === 'mixed' ? s.legend.isolateVariants
+            : undefined;
+          return Object.values(variants ?? {});
+        }).map((src) => <img key={src} src={src} alt="" />)}
       </div>
     </div>
   );
