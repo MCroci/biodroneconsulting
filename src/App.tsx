@@ -119,7 +119,8 @@ export default function App() {
   // Prossimi eventi: aggiungete qui le date reali (vedi il vademecum condiviso).
   // Formato data: "AAAA-MM-GG". L'ordine nell'elenco non conta: vengono ordinati
   // automaticamente e quelli già passati non vengono mostrati.
-  const events: { title: string; date: string; location?: string; description?: string; link?: string }[] = [
+  const events: { title: string; date: string; endDate?: string; location?: string; description?: string; link?: string }[] = [
+    { title: "Mostra Zootecnica Internazionale di Cremona", date: "2026-11-26", endDate: "2026-11-28" },
     // Esempio (rimuovere il commento e compilare per pubblicare un evento):
     // { title: "Fiera Agricola SIA", date: "2026-11-05", location: "Verona Fiere", description: "Demo dal vivo del drone in campo con il team CITIMAP.", link: "https://example.com" },
   ];
@@ -127,7 +128,7 @@ export default function App() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const upcomingEvents = events
-    .filter((e) => new Date(e.date) >= today)
+    .filter((e) => new Date(e.endDate || e.date) >= today)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
@@ -628,17 +629,25 @@ export default function App() {
               ) : (
                 <div className="space-y-4">
                   {upcomingEvents.map((event) => {
-                    const eventDate = new Date(event.date);
-                    const day = eventDate.getDate();
-                    const month = eventDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
+                    const startDate = new Date(event.date);
+                    const endDate = event.endDate ? new Date(event.endDate) : null;
+                    const sameMonth = !!endDate && startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear();
+                    const month = startDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
+                    const dayLabel = endDate && sameMonth ? `${startDate.getDate()}-${endDate.getDate()}` : `${startDate.getDate()}`;
+                    const dateRangeLabel = !endDate
+                      ? startDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : sameMonth
+                        ? `${startDate.getDate()}–${endDate.getDate()} ${startDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}`
+                        : `${startDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })} – ${endDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}`;
                     return (
                       <div key={`${event.title}-${event.date}`} className="flex items-start gap-5 bg-brand-bg border border-gray-100 rounded-2xl p-6">
-                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0">
+                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0 px-1">
                           <span className="text-[11px] uppercase tracking-wide opacity-80">{month}</span>
-                          <span className="text-2xl font-bold leading-none">{day}</span>
+                          <span className="text-lg font-bold leading-none">{dayLabel}</span>
                         </div>
                         <div className="flex-1">
                           <h4 className="text-lg text-gray-900">{event.title}</h4>
+                          <p className="text-sm text-gray-500 mt-1">{dateRangeLabel}</p>
                           {event.location && (
                             <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                               <MapPin className="h-3.5 w-3.5" /> {event.location}
