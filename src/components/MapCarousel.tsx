@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Satellite, TestTube, Activity, Navigation, Droplets } from 'lucide-react';
 
+// Colori delle 4 classi di variabilità storica, condivisi da più mappe/legende
+// (stessi valori usati in scripts/synthetic_maps.py, variabile stab_cols).
+const STABILITY_SWATCHES = [
+  { color: '#3F6B2E', label: 'Sempre alto' },
+  { color: '#E6D9A8', label: 'Nella media' },
+  { color: '#C9793F', label: 'Sempre basso' },
+  { color: '#B7AFCF', label: 'Variabile' },
+];
+
 // Mappe di esempio generate da scripts/synthetic_maps.py (campi immaginari, nessun dato reale).
+// Le immagini contengono solo la mappa (colori, contorni, badge, scala, freccia nord): la legenda,
+// che prima era testo disegnato dentro l'immagine, ora vive qui come dati e viene renderizzata
+// come HTML interattivo (vedi componente Legend più sotto).
 const STEPS = [
   {
     src: '/mappe/mappa-1-storico.webp',
@@ -11,6 +23,7 @@ const STEPS = [
     short: 'Storico',
     title: 'Variabilità storica',
     desc: 'Più anni di immagini satellitari rivelano le zone dove la coltura cresce sempre bene, sempre meno, o cambia di anno in anno.',
+    legend: { kind: 'swatches' as const, items: STABILITY_SWATCHES },
   },
   {
     src: '/mappe/mappa-2-campionamento.webp',
@@ -19,6 +32,15 @@ const STEPS = [
     short: 'Campionamento',
     title: 'Campionamento mirato del suolo',
     desc: 'Le zone guidano i prelievi: un campione nel punto più rappresentativo di ogni zona, invece di una griglia fitta. Meno analisi, informazioni più utili.',
+    legend: {
+      kind: 'sampling' as const,
+      caption: '14 prelievi mirati invece di 34 a griglia',
+      markers: [
+        { style: 'ring-thick' as const, color: '#B23A2B', label: 'Prelievo mirato' },
+        { style: 'ring-thin' as const, color: '#7A7A70', label: 'Griglia tradizionale (1/ha)' },
+      ],
+      swatches: STABILITY_SWATCHES,
+    },
   },
   {
     src: '/mappe/mappa-3-stagione.webp',
@@ -27,6 +49,15 @@ const STEPS = [
     short: 'Stagione',
     title: 'Monitoraggio in stagione',
     desc: 'Durante la stagione il satellite confronta il vigore attuale con lo storico e segnala le aree che si comportano in modo anomalo.',
+    legend: {
+      kind: 'scale' as const,
+      title: 'Vigore attuale (NDVI) e aree anomale',
+      stops: ['#B98E5A', '#E6D39A', '#A9C77E', '#4E8A3E', '#15401F'],
+      low: 'Basso',
+      high: 'Alto',
+      ticks: ['0.65', '0.70', '0.75', '0.80'],
+      extra: [{ style: 'dashed-line' as const, color: '#B23A2B', label: 'Area da verificare' }],
+    },
   },
   {
     src: '/mappe/mappa-4-volo.webp',
@@ -35,6 +66,15 @@ const STEPS = [
     short: 'Volo',
     title: 'Volo mirato del drone',
     desc: 'Il drone sorvola solo le aree da verificare: meno tempo in campo e immagini dettagliate proprio dove servono.',
+    legend: {
+      kind: 'mixed' as const,
+      items: [
+        { style: 'patch' as const, color: '#B23A2B', fill: '#E7B7AE', label: 'Area da sorvolare' },
+        { style: 'line' as const, color: '#15240D', label: 'Passate di rilievo' },
+        { style: 'dashed-line' as const, color: '#15240D', label: 'Trasferimento' },
+        { style: 'marker-square' as const, color: '#15240D', label: 'Decollo' },
+      ],
+    },
   },
   {
     src: '/mappe/mappa-5-biostimolanti.webp',
@@ -43,8 +83,130 @@ const STEPS = [
     short: 'Biostimolanti',
     title: 'Distribuzione di biostimolanti a rateo variabile',
     desc: 'Dai dati del drone nasce la mappa di distribuzione dei biostimolanti: più prodotto dove la coltura soffre, meno dove sta già bene.',
+    legend: {
+      kind: 'swatches' as const,
+      items: [
+        { color: '#9DBB86', label: 'Dose −25%' },
+        { color: '#EFE3BF', label: 'Dose standard' },
+        { color: '#DE9A4C', label: 'Dose +25%' },
+        { color: '#A33A1F', label: 'Dose +50%' },
+      ],
+    },
   },
 ];
+
+/** Chip di legenda con un piccolo campione visivo (colore, linea, marker...) + etichetta. */
+const LegendChip: React.FC<{ swatch: React.ReactNode; label: string }> = ({ swatch, label }) => (
+  <motion.span
+    whileHover={{ scale: 1.06, y: -1 }}
+    whileTap={{ scale: 0.97 }}
+    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 shadow-sm cursor-default"
+  >
+    {swatch}
+    {label}
+  </motion.span>
+);
+
+const ColorSwatch: React.FC<{ color: string }> = ({ color }) => (
+  <span className="h-2.5 w-2.5 flex-shrink-0 rounded-sm" style={{ backgroundColor: color }} />
+);
+
+const RingMarker: React.FC<{ color: string; thick?: boolean }> = ({ color, thick }) => (
+  <span
+    className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-white"
+    style={{ border: `${thick ? 2 : 1.5}px solid ${color}` }}
+  />
+);
+
+const LineSwatch: React.FC<{ color: string; dashed?: boolean }> = ({ color, dashed }) =>
+  dashed ? (
+    <span className="w-4 flex-shrink-0 border-t-2 border-dashed" style={{ borderColor: color }} />
+  ) : (
+    <span className="h-0.5 w-4 flex-shrink-0 rounded-full" style={{ backgroundColor: color }} />
+  );
+
+const PatchSwatch: React.FC<{ color: string; fill: string }> = ({ color, fill }) => (
+  <span className="h-2.5 w-3.5 flex-shrink-0 rounded-sm" style={{ backgroundColor: fill, border: `1.5px solid ${color}` }} />
+);
+
+const SquareMarker: React.FC<{ color: string }> = ({ color }) => (
+  <span className="h-2.5 w-2.5 flex-shrink-0 rounded-[2px] ring-1 ring-gray-300" style={{ backgroundColor: color, border: '1.5px solid white' }} />
+);
+
+type StepLegend = (typeof STEPS)[number]['legend'];
+
+function Legend({ legend }: { legend: StepLegend }) {
+  if (legend.kind === 'swatches') {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {legend.items.map((item) => (
+          <LegendChip key={item.label} swatch={<ColorSwatch color={item.color} />} label={item.label} />
+        ))}
+      </div>
+    );
+  }
+
+  if (legend.kind === 'sampling') {
+    return (
+      <div>
+        <p className="text-sm font-semibold text-brand-dark mb-2">{legend.caption}</p>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {legend.markers.map((m) => (
+            <LegendChip key={m.label} swatch={<RingMarker color={m.color} thick={m.style === 'ring-thick'} />} label={m.label} />
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {legend.swatches.map((item) => (
+            <LegendChip key={item.label} swatch={<ColorSwatch color={item.color} />} label={item.label} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (legend.kind === 'scale') {
+    return (
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{legend.title}</p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{legend.low}</span>
+          <div
+            className="h-2.5 flex-1 rounded-full"
+            style={{ background: `linear-gradient(to right, ${legend.stops.join(', ')})` }}
+          />
+          <span className="text-xs text-gray-500">{legend.high}</span>
+        </div>
+        <div className="flex justify-between mt-1 px-6">
+          {legend.ticks.map((t) => (
+            <span key={t} className="text-[11px] text-gray-400">{t}</span>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {legend.extra.map((item) => (
+            <LegendChip key={item.label} swatch={<LineSwatch color={item.color} dashed />} label={item.label} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {legend.items.map((item) => (
+        <LegendChip
+          key={item.label}
+          swatch={
+            item.style === 'patch' ? <PatchSwatch color={item.color} fill={item.fill!} />
+            : item.style === 'dashed-line' ? <LineSwatch color={item.color} dashed />
+            : item.style === 'marker-square' ? <SquareMarker color={item.color} />
+            : <LineSwatch color={item.color} />
+          }
+          label={item.label}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function MapCarousel() {
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
@@ -98,7 +260,7 @@ export default function MapCarousel() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
         {/* Mappa */}
         <div className="lg:col-span-7 relative overflow-hidden rounded-2xl bg-white shadow-sm">
-          <div className="aspect-[1200/1080]" />
+          <div className="aspect-[1200/896]" />
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
               key={step.src}
@@ -147,7 +309,8 @@ export default function MapCarousel() {
                 </span>
               </div>
               <h4 className="text-2xl md:text-3xl font-heading text-brand-dark mb-3">{step.title}</h4>
-              <p className="text-gray-600 leading-relaxed">{step.desc}</p>
+              <p className="text-gray-600 leading-relaxed mb-4">{step.desc}</p>
+              <Legend legend={step.legend} />
             </motion.div>
           </AnimatePresence>
 

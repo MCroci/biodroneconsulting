@@ -32,6 +32,7 @@ rng = np.random.default_rng(11)
 
 TEXT = "#2D3330"
 GROUND = "#E9E5D9"
+LEGEND_BAND = 0.17  # frazione inferiore della figura riservata a legenda/didascalia/colorbar (vedi new_map)
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 12, "text.color": TEXT})
 
 # ---------------------------------------------------------------- paesaggio (1 unità = 10 m)
@@ -143,7 +144,7 @@ def badge(ax, text):
 
 def new_map(tag):
     fig = plt.figure(figsize=(8, 7.2))
-    ax = fig.add_axes([0.02, 0.17, 0.96, 0.81])
+    ax = fig.add_axes([0.02, LEGEND_BAND, 0.96, 0.98 - LEGEND_BAND])
     landscape(ax)
     ax.set_xlim(VIEW[0], VIEW[1]); ax.set_ylim(VIEW[2], VIEW[3]); ax.set_aspect("equal")
     ax.set_xticks([]); ax.set_yticks([])
@@ -181,11 +182,19 @@ def target_outline(ax, lw, color, ls="-", halo=False):
 
 
 def save(fig, name):
+    # Ritaglia la fascia inferiore della figura (dove prima stavano legenda/didascalia/
+    # colorbar, sotto l'asse della mappa che parte a y=LEGEND_BAND): la mappa vera e
+    # propria (colori, contorni, badge, scala, freccia nord) resta invariata pixel per
+    # pixel; il testo della legenda ora vive solo come componente React accanto all'immagine.
     from PIL import Image
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=150, facecolor="white")
     plt.close(fig)
-    Image.open(buf).convert("RGB").save(OUT / f"{name}.webp", "WEBP", quality=90)
+    img = Image.open(buf).convert("RGB")
+    w, h = img.size
+    crop_h = round(h * (1 - LEGEND_BAND))
+    img = img.crop((0, 0, w, crop_h))
+    img.save(OUT / f"{name}.webp", "WEBP", quality=90)
 
 
 def gfield(shape, sigma, seed, m):
@@ -290,8 +299,8 @@ im = show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82)
 target_outline(ax, 2, "#B23A2B", "--", halo=True)
 outline(ax); decorations(ax)
 colorbar(fig, im, "Vigore attuale (NDVI) e aree anomale", "Basso", "Alto", [0.65, 0.70, 0.75, 0.80], "{:.2f}")
-ax.plot([], [], color="#B23A2B", ls="--", lw=2, label="Area da verificare")
-ax.legend(loc="upper right", bbox_to_anchor=(0.9, 0.995), frameon=True, framealpha=0.92, edgecolor="none", fontsize=10)
+# "Area da verificare" (contorno tratteggiato rosso) ora è spiegata nella legenda React, non più
+# in un riquadro sovrapposto alla mappa.
 save(fig, "mappa-3-stagione")
 
 # ---------------------------------------------------------------- mappa 3: piano di volo
