@@ -542,7 +542,7 @@ export default function App() {
               <h4 className="text-white mb-4">Partner di Progetto</h4>
               <div className="flex flex-col items-center gap-4 w-fit">
                 <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain brightness-0 invert" />
-                <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain brightness-0 invert" />
+                <img src="/logo-unicatt-bianco.png" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
                 <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain" />
               </div>
             </div>
