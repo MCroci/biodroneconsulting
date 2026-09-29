@@ -310,9 +310,9 @@ export default function App() {
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Manuale operativo per l'integrazione di dati satellitari e droni nella gestione del mais e del riso.
                 </p>
-                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
-                  Scarica PDF <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
+                <span className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                  Presto disponibile
+                </span>
               </div>
             </FadeIn>
 
