@@ -294,14 +294,28 @@ save(fig, "mappa-2-campionamento")
 
 # ---------------------------------------------------------------- mappa 2: stagione
 ndvi_cmap = LinearSegmentedColormap.from_list("ndvi", ["#B98E5A", "#E6D39A", "#A9C77E", "#4E8A3E", "#15401F"])
-fig, ax = new_map("3 · Satellite · stagione in corso")
-im = show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82)
-target_outline(ax, 2, "#B23A2B", "--", halo=True)
-outline(ax); decorations(ax)
-colorbar(fig, im, "Vigore attuale (NDVI) e aree anomale", "Basso", "Alto", [0.65, 0.70, 0.75, 0.80], "{:.2f}")
-# "Area da verificare" (contorno tratteggiato rosso) ora è spiegata nella legenda React, non più
-# in un riquadro sovrapposto alla mappa.
-save(fig, "mappa-3-stagione")
+
+
+def stagione_map(soglia=None):
+    # soglia: se indicata, evidenzia in rosso i pixel con NDVI attuale sotto quel valore (stesso
+    # dato "ndvi" della mappa base). Genera le varianti che la legenda interattiva in
+    # MapCarousel.tsx mostra passando il cursore sulla scala del vigore.
+    fig, ax = new_map("3 · Satellite · stagione in corso")
+    im = show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82)
+    if soglia is not None:
+        show(ax, np.ones_like(ndvi), mask & (ndvi < soglia), z=5.5,
+             cmap=ListedColormap(["#B23A2B"]), alpha=0.32)
+    target_outline(ax, 2, "#B23A2B", "--", halo=True)
+    outline(ax); decorations(ax)
+    colorbar(fig, im, "Vigore attuale (NDVI) e aree anomale", "Basso", "Alto", [0.65, 0.70, 0.75, 0.80], "{:.2f}")
+    return fig
+
+
+# "Area da verificare" (contorno tratteggiato rosso) è spiegata nella legenda React, non più in un
+# riquadro sovrapposto alla mappa.
+save(stagione_map(), "mappa-3-stagione")
+for soglia in (0.65, 0.70, 0.75, 0.80):
+    save(stagione_map(soglia), f"mappa-3-stagione-soglia-{round(soglia * 100)}")
 
 # ---------------------------------------------------------------- mappa 3: piano di volo
 fig, ax = new_map("4 · Drone · volo mirato")

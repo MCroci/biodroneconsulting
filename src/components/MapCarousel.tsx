@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Satellite, TestTube, Activity, Navigation, Droplets } from 'lucide-react';
 
@@ -57,6 +57,14 @@ const STEPS = [
       high: 'Alto',
       ticks: ['0.65', '0.70', '0.75', '0.80'],
       extra: [{ style: 'dashed-line' as const, color: '#B23A2B', label: 'Area da verificare' }],
+      // Varianti della mappa (stesso dato NDVI, stessa mappa) con le zone sotto ogni soglia
+      // evidenziate in rosso: generate da scripts/synthetic_maps.py (stagione_map(soglia=...)).
+      thresholdVariants: {
+        '0.65': '/mappe/mappa-3-stagione-soglia-65.webp',
+        '0.70': '/mappe/mappa-3-stagione-soglia-70.webp',
+        '0.75': '/mappe/mappa-3-stagione-soglia-75.webp',
+        '0.80': '/mappe/mappa-3-stagione-soglia-80.webp',
+      } as Record<string, string>,
     },
   },
   {
@@ -135,7 +143,19 @@ const SquareMarker: React.FC<{ color: string }> = ({ color }) => (
 
 type StepLegend = (typeof STEPS)[number]['legend'];
 
-function Legend({ legend }: { legend: StepLegend }) {
+function Legend({
+  legend,
+  activeTick,
+  pinnedTick,
+  onHoverTick,
+  onPinTick,
+}: {
+  legend: StepLegend;
+  activeTick?: string | null;
+  pinnedTick?: string | null;
+  onHoverTick?: (t: string | null) => void;
+  onPinTick?: (t: string | null) => void;
+}) {
   if (legend.kind === 'swatches') {
     return (
       <div className="flex flex-wrap gap-2">
@@ -165,20 +185,55 @@ function Legend({ legend }: { legend: StepLegend }) {
   }
 
   if (legend.kind === 'scale') {
+    const ticks = legend.ticks;
+    const pickTick = (clientX: number, el: HTMLElement) => {
+      const rect = el.getBoundingClientRect();
+      const frac = Math.min(0.999, Math.max(0, (clientX - rect.left) / rect.width));
+      return ticks[Math.min(ticks.length - 1, Math.floor(frac * ticks.length))];
+    };
     return (
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{legend.title}</p>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">{legend.low}</span>
           <div
-            className="h-2.5 flex-1 rounded-full"
-            style={{ background: `linear-gradient(to right, ${legend.stops.join(', ')})` }}
-          />
+            className="relative h-4 flex-1 flex items-center cursor-pointer"
+            onMouseMove={(e) => onHoverTick?.(pickTick(e.clientX, e.currentTarget))}
+            onMouseLeave={() => onHoverTick?.(null)}
+            onClick={(e) => {
+              const t = pickTick(e.clientX, e.currentTarget);
+              onPinTick?.(pinnedTick === t ? null : t);
+            }}
+          >
+            <div
+              className="h-2.5 w-full rounded-full"
+              style={{ background: `linear-gradient(to right, ${legend.stops.join(', ')})` }}
+            />
+            {activeTick && (
+              <motion.div
+                layout
+                transition={{ duration: 0.15 }}
+                className="absolute top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-white shadow ring-2 ring-brand-dark pointer-events-none"
+                style={{ left: `${((ticks.indexOf(activeTick) + 0.5) / ticks.length) * 100}%` }}
+              />
+            )}
+          </div>
           <span className="text-xs text-gray-500">{legend.high}</span>
         </div>
         <div className="flex justify-between mt-1 px-6">
-          {legend.ticks.map((t) => (
-            <span key={t} className="text-[11px] text-gray-400">{t}</span>
+          {ticks.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onMouseEnter={() => onHoverTick?.(t)}
+              onMouseLeave={() => onHoverTick?.(null)}
+              onClick={() => onPinTick?.(pinnedTick === t ? null : t)}
+              className={`text-[11px] rounded px-1 transition-colors ${
+                activeTick === t ? 'text-white bg-brand-dark' : 'text-gray-400 hover:text-brand-dark'
+              }`}
+            >
+              {t}
+            </button>
           ))}
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
@@ -186,6 +241,11 @@ function Legend({ legend }: { legend: StepLegend }) {
             <LegendChip key={item.label} swatch={<LineSwatch color={item.color} dashed />} label={item.label} />
           ))}
         </div>
+        <p className="text-xs text-brand-accent mt-2 min-h-[1em]">
+          {activeTick
+            ? `In rosso: aree con NDVI attuale sotto ${activeTick}${pinnedTick === activeTick ? ' · soglia fissata, clicca per sbloccare' : ' (clicca per fissare)'}`
+            : 'Passa il cursore sulla scala per vedere le aree sotto una soglia di NDVI'}
+        </p>
       </div>
     );
   }
@@ -210,7 +270,17 @@ function Legend({ legend }: { legend: StepLegend }) {
 
 export default function MapCarousel() {
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
+  const [hoverTick, setHoverTick] = useState<string | null>(null);
+  const [pinTick, setPinTick] = useState<string | null>(null);
   const step = STEPS[index];
+  const activeTick = pinTick ?? hoverTick;
+  const thresholdSrc =
+    activeTick && step.legend.kind === 'scale' ? step.legend.thresholdVariants?.[activeTick] : undefined;
+
+  useEffect(() => {
+    setHoverTick(null);
+    setPinTick(null);
+  }, [index]);
 
   const goTo = (next: number) => {
     if (next < 0 || next >= STEPS.length || next === index) return;
@@ -287,6 +357,21 @@ export default function MapCarousel() {
               className="absolute inset-0 w-full h-full object-contain cursor-grab active:cursor-grabbing select-none"
             />
           </AnimatePresence>
+          <AnimatePresence>
+            {thresholdSrc && (
+              <motion.img
+                key={thresholdSrc}
+                src={thresholdSrc}
+                alt=""
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Testo */}
@@ -310,7 +395,13 @@ export default function MapCarousel() {
               </div>
               <h4 className="text-2xl md:text-3xl font-heading text-brand-dark mb-3">{step.title}</h4>
               <p className="text-gray-600 leading-relaxed mb-4">{step.desc}</p>
-              <Legend legend={step.legend} />
+              <Legend
+                legend={step.legend}
+                activeTick={activeTick}
+                pinnedTick={pinTick}
+                onHoverTick={setHoverTick}
+                onPinTick={setPinTick}
+              />
             </motion.div>
           </AnimatePresence>
 
@@ -338,9 +429,12 @@ export default function MapCarousel() {
         </div>
       </div>
 
-      {/* Precarica le altre mappe per un passaggio senza attese */}
+      {/* Precarica le altre mappe (e le varianti della soglia NDVI) per un passaggio senza attese */}
       <div className="hidden" aria-hidden="true">
         {STEPS.map((s) => <img key={s.src} src={s.src} alt="" />)}
+        {STEPS.flatMap((s) => (s.legend.kind === 'scale' ? Object.values(s.legend.thresholdVariants ?? {}) : [])).map(
+          (src) => <img key={src} src={src} alt="" />
+        )}
       </div>
     </div>
   );
