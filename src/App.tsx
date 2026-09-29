@@ -101,6 +101,20 @@ export default function App() {
     { name: 'Divulgazione', href: '#risultati' },
   ];
 
+  // Prossimi eventi: aggiungete qui le date reali (vedi il vademecum condiviso).
+  // Formato data: "AAAA-MM-GG". L'ordine nell'elenco non conta: vengono ordinati
+  // automaticamente e quelli già passati non vengono mostrati.
+  const events: { title: string; date: string; location?: string; description?: string; link?: string }[] = [
+    // Esempio (rimuovere il commento e compilare per pubblicare un evento):
+    // { title: "Fiera Agricola SIA", date: "2026-11-05", location: "Verona Fiere", description: "Demo dal vivo del drone in campo con il team CITIMAP.", link: "https://example.com" },
+  ];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events
+    .filter((e) => new Date(e.date) >= today)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
       <DroneCursor />
@@ -324,7 +338,7 @@ export default function App() {
                 <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
                   Partecipazione a fiere di settore (SIA) e incontri in campo con i Gruppi Operativi per mostrare il drone in azione.
                 </p>
-                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                <a href="#calendario" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
                   Calendario Eventi <ChevronRight className="h-4 w-4 ml-1" />
                 </a>
               </div>
@@ -357,6 +371,63 @@ export default function App() {
               </div>
             </div>
           </FadeIn>
+
+          {/* Calendario Eventi */}
+          <div id="calendario" className="mt-16 scroll-mt-28">
+            <FadeIn>
+              <div className="text-center mb-10">
+                <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Calendario Eventi</h3>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Fiere di settore, incontri in campo e webinar dove poter vedere il drone in azione.
+                </p>
+              </div>
+            </FadeIn>
+
+            {upcomingEvents.length === 0 ? (
+              <FadeIn>
+                <div className="flex flex-col items-center text-center gap-3 bg-brand-bg border border-gray-100 rounded-2xl py-12 px-6">
+                  <Calendar className="h-10 w-10 text-brand-light" />
+                  <p className="text-gray-700 max-w-md">
+                    Nessun evento in programma al momento. Torna a trovarci presto: qui pubblicheremo fiere, incontri in campo e webinar del progetto.
+                  </p>
+                </div>
+              </FadeIn>
+            ) : (
+              <div className="space-y-4 max-w-3xl mx-auto">
+                {upcomingEvents.map((event, idx) => {
+                  const eventDate = new Date(event.date);
+                  const day = eventDate.getDate();
+                  const month = eventDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
+                  return (
+                    <FadeIn key={`${event.title}-${event.date}`} delay={idx * 0.1}>
+                      <div className="flex items-start gap-5 bg-brand-bg border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-all duration-300">
+                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0">
+                          <span className="text-[11px] uppercase tracking-wide opacity-80">{month}</span>
+                          <span className="text-2xl font-bold leading-none">{day}</span>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg text-gray-900">{event.title}</h4>
+                          {event.location && (
+                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin className="h-3.5 w-3.5" /> {event.location}
+                            </p>
+                          )}
+                          {event.description && (
+                            <p className="text-gray-600 mt-2">{event.description}</p>
+                          )}
+                          {event.link && (
+                            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark mt-3">
+                              Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </FadeIn>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -535,6 +606,7 @@ export default function App() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#drone" className="hover:text-white transition-colors">Perché il Drone</a></li>
                 <li><a href="#risultati" className="hover:text-white transition-colors">Materiale Divulgativo</a></li>
+                <li><a href="#calendario" className="hover:text-white transition-colors">Calendario Eventi</a></li>
                 <li><a href="#contatti" className="hover:text-white transition-colors">Contatti</a></li>
               </ul>
             </div>
