@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { 
-  Leaf, Map, Sprout, TestTube, TrendingDown, Users, BookOpen, 
+  Leaf, Sprout, TestTube, TrendingDown, Users, BookOpen,
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
-  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, Cpu, CheckCircle2,
+  Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, CheckCircle2,
   Info, AlertTriangle, Cookie
 } from 'lucide-react';
 import DroneCursor from './components/DroneCursor';
@@ -72,62 +72,11 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
   );
 };
 
-const DroneIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="3" />
-    <path d="M14.12 14.12 17 17" />
-    <path d="M9.88 14.12 7 17" />
-    <path d="M14.12 9.88 17 7" />
-    <path d="M9.88 9.88 7 7" />
-    <circle cx="7" cy="7" r="2" />
-    <circle cx="17" cy="7" r="2" />
-    <circle cx="7" cy="17" r="2" />
-    <circle cx="17" cy="17" r="2" />
-  </svg>
-);
-
-/**
- * Decorative fan of curved lines echoing the "campo" (field furrows)
- * graphic at the base of the brand logo, converging toward an
- * off-canvas point below the viewBox.
- */
-const FieldLines = ({ className = "" }: { className?: string }) => {
-  const apexX = 350, apexY = 610, topY = 90, maxSpreadX = 310, bow = 0.95, count = 7;
-  const ctrlY = apexY - (apexY - topY) * 0.55;
-  const lines = Array.from({ length: count }, (_, i) => {
-    const frac = (i + 1) / count;
-    return { endX: apexX + frac * maxSpreadX, ctrlX: apexX + frac * maxSpreadX * bow };
-  });
-
-  return (
-    <svg viewBox="0 0 700 500" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
-      <g fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        {lines.map(({ endX, ctrlX }, i) => (
-          <React.Fragment key={i}>
-            <path d={`M ${apexX} ${apexY} Q ${ctrlX} ${ctrlY} ${endX} ${topY}`} />
-            <path d={`M ${apexX} ${apexY} Q ${2 * apexX - ctrlX} ${ctrlY} ${2 * apexX - endX} ${topY}`} />
-          </React.Fragment>
-        ))}
-      </g>
-    </svg>
-  );
-};
-
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeWorkflowStep, setActiveWorkflowStep] = useState(0);
-  const [isHoveringWorkflow, setIsHoveringWorkflow] = useState(false);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -142,33 +91,45 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Blocca lo scroll della pagina e permette di chiudere con Esc quando il popup del calendario è aperto
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsCalendarOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCalendarOpen]);
+
   const handleCookieConsent = (accepted: boolean) => {
     localStorage.setItem('cookieConsent', accepted ? 'accepted' : 'rejected');
     setShowCookieBanner(false);
   };
 
-  // Auto-advance workflow steps for dynamism
-  useEffect(() => {
-    if (isHoveringWorkflow) return;
-    const timer = setInterval(() => {
-      setActiveWorkflowStep((prev) => (prev + 1) % 4);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [isHoveringWorkflow]);
-
   const navLinks = [
     { name: 'Il Drone', href: '#drone' },
-    { name: 'Come Funziona', href: '#workflow' },
     { name: 'Il Progetto', href: '#progetto' },
     { name: 'Divulgazione', href: '#risultati' },
   ];
 
-  const workflowSteps = [
-    { title: "1. Mappatura Satellitare", icon: Map, desc: "Acquisizione serie storiche Sentinel-2, calcolo indici (NDVI) e zonizzazione k-Means per le Management Zones.", color: "text-blue-500", bg: "bg-blue-500" },
-    { title: "2. Volo Drone (Scala Micro)", icon: DroneIcon, desc: "Guidati dalle mappe satellitari, i droni acquisiscono immagini multispettrali ad altissima risoluzione per il calcolo indici sulle parcelle.", color: "text-brand-accent", bg: "bg-brand-accent" },
-    { title: "3. Ground-Truthing Stratificato", icon: Target, desc: "Generazione coordinate per campionamenti mirati e validazione con Doppia Diagnostica vegetazione/suolo nudo.", color: "text-brand-dark", bg: "bg-brand-dark" },
-    { title: "4. Protocolli DSS", icon: Cpu, desc: "Validazione dei protocolli on-farm per la distribuzione a rateo variabile di biostimolanti, con analisi statistica su 2 stagioni.", color: "text-brand-light", bg: "bg-brand-light" }
+  // Prossimi eventi: aggiungete qui le date reali (vedi il vademecum condiviso).
+  // Formato data: "AAAA-MM-GG". L'ordine nell'elenco non conta: vengono ordinati
+  // automaticamente e quelli già passati non vengono mostrati.
+  const events: { title: string; date: string; endDate?: string; location?: string; description?: string; link?: string }[] = [
+    { title: "Mostra Zootecnica Internazionale di Cremona", date: "2026-11-26", endDate: "2026-11-28" },
+    // Esempio (rimuovere il commento e compilare per pubblicare un evento):
+    // { title: "Fiera Agricola SIA", date: "2026-11-05", location: "Verona Fiere", description: "Demo dal vivo del drone in campo con il team CITIMAP.", link: "https://example.com" },
   ];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events
+    .filter((e) => new Date(e.endDate || e.date) >= today)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
@@ -265,10 +226,6 @@ export default function App() {
                     Scopri i Vantaggi
                     <ChevronRight className="ml-2 -mr-1 h-4 w-4" />
                   </a>
-                  <a href="#workflow" className="inline-flex items-center justify-center px-8 py-3.5 border border-brand-text/20 text-[15px] font-semibold rounded-full text-brand-text hover:bg-brand-text/5 hover:text-brand-text transition-all">
-                    Come Funziona
-                    <DroneIcon className="ml-2 -mr-1 h-4 w-4" />
-                  </a>
                 </div>
               </motion.div>
 
@@ -350,89 +307,86 @@ export default function App() {
         </div>
       </section>
 
-      {/* Come Funziona (Interactive Workflow) */}
-      <section id="workflow" className="py-24 bg-brand-dark text-white overflow-hidden">
+      {/* Divulgazione e Risultati */}
+      <section id="risultati" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-heading mb-6">Il Flusso Operativo</h2>
-              <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-                Dallo spazio al singolo filo d'erba: ecco come i dati si trasformano in azione.
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
+              <div className="w-24 h-1 bg-brand-accent mx-auto mt-6 rounded-full"></div>
+              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+                Condividiamo apertamente i risultati del progetto per favorire l'adozione di queste tecnologie da parte di agricoltori e consulenti.
               </p>
             </div>
           </FadeIn>
 
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-            onMouseEnter={() => setIsHoveringWorkflow(true)}
-            onMouseLeave={() => setIsHoveringWorkflow(false)}
-          >
-            {/* Steps Navigation */}
-            <div className="lg:col-span-5 space-y-4">
-              {workflowSteps.map((step, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => setActiveWorkflowStep(idx)}
-                  className={`cursor-pointer p-6 rounded-2xl transition-all duration-300 border-2 ${
-                    activeWorkflowStep === idx 
-                      ? 'bg-white/10 border-brand-light shadow-lg transform translate-x-2' 
-                      : 'bg-transparent border-transparent hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${activeWorkflowStep === idx ? step.bg + ' text-white' : 'bg-white/10 text-gray-400'}`}>
-                      <step.icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h3 className={`text-xl ${activeWorkflowStep === idx ? 'text-white' : 'text-gray-400'}`}>
-                        {step.title}
-                      </h3>
-                    </div>
-                  </div>
-                  <AnimatePresence>
-                    {activeWorkflowStep === idx && (
-                      <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 text-gray-300 pl-16"
-                      >
-                        {step.desc}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+          {/* Mappe di esempio (dati sintetici, nessuna azienda reale) */}
+          <FadeIn>
+            <div className="mb-16">
+              <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Dal Satellite al Drone, in 5 Passi</h3>
+              <p className="text-gray-600 mb-8 max-w-3xl">
+                Le immagini satellitari storiche e quelle della stagione in corso mostrano dove il campo varia: guidano i prelievi di suolo, poi il drone vola solo dove serve e guida una distribuzione di biostimolanti su misura. Esempio illustrativo su campi immaginari generati al computer: non riproduce dati di aziende reali.
+              </p>
+              <MapCarousel />
             </div>
+          </FadeIn>
 
-            {/* Dynamic Visualizer */}
-            <div className="lg:col-span-7 relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeWorkflowStep}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0 bg-gradient-to-br from-[#2B5219] via-[#60795A] to-[#15240D]"
-                >
-                  <FieldLines className="absolute inset-0 w-full h-full text-white/15" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  
-                  {/* Overlay UI based on step */}
-                  <div className="absolute bottom-8 left-8 right-8">
-                    <div className="bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-white/20">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-3 h-3 rounded-full ${workflowSteps[activeWorkflowStep].bg} animate-pulse`}></div>
-                        <span className="font-mono text-sm text-brand-light tracking-wider uppercase">Fase Attiva</span>
-                      </div>
-                      <h4 className="text-2xl text-white">{workflowSteps[activeWorkflowStep].title}</h4>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <FadeIn delay={0.1}>
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+                <FileText className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
+                <h3 className="text-xl mb-3">Linee Guida Pratiche</h3>
+                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
+                  Manuale operativo per l'integrazione di dati satellitari e droni nella gestione del mais e del riso.
+                </p>
+                <span className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                  Presto disponibile
+                </span>
+              </div>
+            </FadeIn>
+
+            {/* Card 2 */}
+            <FadeIn delay={0.2}>
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+                <Presentation className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
+                <h3 className="text-xl mb-3">Eventi e Convegni</h3>
+                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
+                  Partecipazione a fiere di settore (SIA) e incontri in campo con i Gruppi Operativi per mostrare il drone in azione.
+                </p>
+                <button onClick={() => setIsCalendarOpen(true)} className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                  Calendario Eventi <ChevronRight className="h-4 w-4 ml-1" />
+                </button>
+              </div>
+            </FadeIn>
+
+            {/* Card 3 */}
+            <FadeIn delay={0.3}>
+              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+                <BookOpen className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
+                <h3 className="text-xl mb-3">Pubblicazioni Scientifiche</h3>
+                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
+                  Articoli peer-reviewed sui risultati agronomici ed economici dell'uso dei biostimolanti a rateo variabile.
+                </p>
+                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
+                  Leggi gli Articoli <ChevronRight className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </FadeIn>
           </div>
+
+          {/* Alert Box Divulgativo */}
+          <FadeIn delay={0.4}>
+            <div className="mt-12 bg-green-50 border-l-4 border-brand-accent p-6 rounded-r-xl flex items-start gap-4">
+              <Info className="h-6 w-6 text-brand-accent flex-shrink-0 mt-1" />
+              <div>
+                <h4 className="text-gray-900 text-lg">Lo sapevi che?</h4>
+                <p className="text-gray-700 mt-1">
+                  Un drone agricolo moderno può mappare fino a 50 ettari in un solo volo di 30 minuti, fornendo dati con una precisione di 2 cm/pixel, impossibili da ottenere con i soli satelliti.
+                </p>
+              </div>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -517,89 +471,6 @@ export default function App() {
               </div>
             </FadeIn>
           </div>
-        </div>
-      </section>
-
-      {/* Divulgazione e Risultati */}
-      <section id="risultati" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark">Materiale Divulgativo</h2>
-              <div className="w-24 h-1 bg-brand-accent mx-auto mt-6 rounded-full"></div>
-              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
-                Condividiamo apertamente i risultati del progetto per favorire l'adozione di queste tecnologie da parte di agricoltori e consulenti.
-              </p>
-            </div>
-          </FadeIn>
-
-          {/* Mappe di esempio (dati sintetici, nessuna azienda reale) */}
-          <FadeIn>
-            <div className="mb-16">
-              <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Dal Satellite al Drone, in 5 Passi</h3>
-              <p className="text-gray-600 mb-8 max-w-3xl">
-                Le immagini satellitari storiche e quelle della stagione in corso mostrano dove il campo varia: guidano i prelievi di suolo, poi il drone vola solo dove serve e guida una distribuzione di biostimolanti su misura. Esempio illustrativo su campi immaginari generati al computer: non riproduce dati di aziende reali.
-              </p>
-              <MapCarousel />
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <FadeIn delay={0.1}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
-                <FileText className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl mb-3">Linee Guida Pratiche</h3>
-                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
-                  Manuale operativo per l'integrazione di dati satellitari e droni nella gestione del mais e del riso.
-                </p>
-                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
-                  Scarica PDF <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
-              </div>
-            </FadeIn>
-
-            {/* Card 2 */}
-            <FadeIn delay={0.2}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
-                <Presentation className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl mb-3">Eventi e Convegni</h3>
-                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
-                  Partecipazione a fiere di settore (SIA) e incontri in campo con i Gruppi Operativi per mostrare il drone in azione.
-                </p>
-                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
-                  Calendario Eventi <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
-              </div>
-            </FadeIn>
-
-            {/* Card 3 */}
-            <FadeIn delay={0.3}>
-              <div className="bg-brand-bg rounded-2xl p-8 border border-gray-100 h-full flex flex-col group hover:bg-brand-dark hover:text-white hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
-                <BookOpen className="h-10 w-10 text-brand-accent mb-6 group-hover:text-brand-light transition-colors" />
-                <h3 className="text-xl mb-3">Pubblicazioni Scientifiche</h3>
-                <p className="text-gray-600 group-hover:text-gray-300 mb-6 flex-1">
-                  Articoli peer-reviewed sui risultati agronomici ed economici dell'uso dei biostimolanti a rateo variabile.
-                </p>
-                <a href="#" className="inline-flex items-center font-bold text-brand-dark group-hover:text-white">
-                  Leggi gli Articoli <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
-              </div>
-            </FadeIn>
-          </div>
-
-          {/* Alert Box Divulgativo */}
-          <FadeIn delay={0.4}>
-            <div className="mt-12 bg-green-50 border-l-4 border-brand-accent p-6 rounded-r-xl flex items-start gap-4">
-              <Info className="h-6 w-6 text-brand-accent flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-gray-900 text-lg">Lo sapevi che?</h4>
-                <p className="text-gray-700 mt-1">
-                  Un drone agricolo moderno può mappare fino a 50 ettari in un solo volo di 30 minuti, fornendo dati con una precisione di 2 cm/pixel, impossibili da ottenere con i soli satelliti.
-                </p>
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
 
@@ -693,20 +564,16 @@ export default function App() {
               <h4 className="text-white mb-4">Link Rapidi</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="#drone" className="hover:text-white transition-colors">Perché il Drone</a></li>
-                <li><a href="#workflow" className="hover:text-white transition-colors">Come Funziona</a></li>
                 <li><a href="#risultati" className="hover:text-white transition-colors">Materiale Divulgativo</a></li>
+                <li><button onClick={() => setIsCalendarOpen(true)} className="hover:text-white transition-colors">Calendario Eventi</button></li>
                 <li><a href="#contatti" className="hover:text-white transition-colors">Contatti</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white mb-4">Partner di Progetto</h4>
-              <div className="flex flex-col items-center gap-4 w-fit">
-                <div className="bg-white p-3 rounded-lg w-fit">
-                  <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain" />
-                </div>
-                <div className="bg-white p-3 rounded-lg w-fit">
-                  <img src="/logo-unicatt.svg" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
-                </div>
+              <div className="flex flex-col items-start gap-4 w-fit">
+                <img src="/logo-farmconsulting.svg" alt="Farm Consulting" className="h-7 object-contain brightness-0 invert" />
+                <img src="/logo-unicatt-bianco.png" alt="Università Cattolica del Sacro Cuore" className="h-14 object-contain" />
                 <img src="/logo-citimap.webp" alt="CITIMAP" className="h-16 object-contain" />
               </div>
             </div>
@@ -718,6 +585,92 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Popup Calendario Eventi */}
+      <AnimatePresence>
+        {isCalendarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50"
+            onClick={() => setIsCalendarOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-8"
+            >
+              <button
+                onClick={() => setIsCalendarOpen(false)}
+                aria-label="Chiudi"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mb-2">Calendario Eventi</h3>
+                <p className="text-gray-600">
+                  Fiere di settore, incontri in campo e webinar dove poter vedere il drone in azione.
+                </p>
+              </div>
+
+              {upcomingEvents.length === 0 ? (
+                <div className="flex flex-col items-center text-center gap-3 bg-brand-bg border border-gray-100 rounded-2xl py-12 px-6">
+                  <Calendar className="h-10 w-10 text-brand-light" />
+                  <p className="text-gray-700 max-w-md">
+                    Nessun evento in programma al momento. Torna a trovarci presto: qui pubblicheremo fiere, incontri in campo e webinar del progetto.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingEvents.map((event) => {
+                    const startDate = new Date(event.date);
+                    const endDate = event.endDate ? new Date(event.endDate) : null;
+                    const sameMonth = !!endDate && startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear();
+                    const month = startDate.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '').toUpperCase();
+                    const dayLabel = endDate && sameMonth ? `${startDate.getDate()}-${endDate.getDate()}` : `${startDate.getDate()}`;
+                    const dateRangeLabel = !endDate
+                      ? startDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : sameMonth
+                        ? `${startDate.getDate()}–${endDate.getDate()} ${startDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}`
+                        : `${startDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })} – ${endDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                    return (
+                      <div key={`${event.title}-${event.date}`} className="flex items-start gap-5 bg-brand-bg border border-gray-100 rounded-2xl p-6">
+                        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-brand-dark text-white flex-shrink-0 px-1">
+                          <span className="text-[11px] uppercase tracking-wide opacity-80">{month}</span>
+                          <span className="text-lg font-bold leading-none">{dayLabel}</span>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg text-gray-900">{event.title}</h4>
+                          <p className="text-sm text-gray-500 mt-1">{dateRangeLabel}</p>
+                          {event.location && (
+                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin className="h-3.5 w-3.5" /> {event.location}
+                            </p>
+                          )}
+                          {event.description && (
+                            <p className="text-gray-600 mt-2">{event.description}</p>
+                          )}
+                          {event.link && (
+                            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark mt-3">
+                              Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Cookie Banner */}
       <AnimatePresence>

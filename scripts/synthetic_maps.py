@@ -15,6 +15,7 @@ Uso (dalla cartella del progetto):
 Richiede: numpy, scipy, matplotlib, pillow.
 """
 import io
+import re
 import sys
 from pathlib import Path as FsPath
 import numpy as np
@@ -23,7 +24,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from matplotlib.patches import Patch, PathPatch, Polygon, FancyBboxPatch
+from matplotlib.patches import PathPatch, Polygon, FancyBboxPatch
 from scipy.ndimage import gaussian_filter, binary_opening, binary_dilation, zoom, distance_transform_edt
 
 OUT = FsPath(sys.argv[1]) if len(sys.argv) > 1 else FsPath(__file__).resolve().parent.parent / "public" / "mappe"
@@ -32,7 +33,15 @@ rng = np.random.default_rng(11)
 
 TEXT = "#2D3330"
 GROUND = "#E9E5D9"
+LEGEND_BAND = 0.17  # frazione inferiore della figura riservata a legenda/didascalia/colorbar (vedi new_map)
+MUTED = "#C7C3B8"    # grigio neutro per le classi/elementi non isolati nelle varianti "isola" (vedi sotto)
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 12, "text.color": TEXT})
+
+
+def slug(label):
+    # Nome file leggibile da un'etichetta di legenda (es. "Dose −25%" -> "dose-meno25").
+    s = label.replace("−", "-").replace("+", "piu").replace("-", "meno")
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 # ---------------------------------------------------------------- paesaggio (1 unità = 10 m)
 W, H = 170, 128
@@ -143,7 +152,7 @@ def badge(ax, text):
 
 def new_map(tag):
     fig = plt.figure(figsize=(8, 7.2))
-    ax = fig.add_axes([0.02, 0.17, 0.96, 0.81])
+    ax = fig.add_axes([0.02, LEGEND_BAND, 0.96, 0.98 - LEGEND_BAND])
     landscape(ax)
     ax.set_xlim(VIEW[0], VIEW[1]); ax.set_ylim(VIEW[2], VIEW[3]); ax.set_aspect("equal")
     ax.set_xticks([]); ax.set_yticks([])
@@ -151,12 +160,6 @@ def new_map(tag):
         s.set_visible(False)
     badge(ax, tag)
     return fig, ax
-
-
-def legend(fig, title, handles, ncol):
-    fig.text(0.5, 0.135, title, ha="center", va="bottom", fontsize=12, fontweight="bold")
-    fig.legend(handles=handles, loc="center", bbox_to_anchor=(0.5, 0.09), ncol=ncol, frameon=False,
-               fontsize=11, handlelength=1.4, columnspacing=1.5)
 
 
 def colorbar(fig, im, label, lo, hi, ticks, fmt):
@@ -181,11 +184,19 @@ def target_outline(ax, lw, color, ls="-", halo=False):
 
 
 def save(fig, name):
+    # Ritaglia la fascia inferiore della figura (dove prima stavano legenda/didascalia/
+    # colorbar, sotto l'asse della mappa che parte a y=LEGEND_BAND): la mappa vera e
+    # propria (colori, contorni, badge, scala, freccia nord) resta invariata pixel per
+    # pixel; il testo della legenda ora vive solo come componente React accanto all'immagine.
     from PIL import Image
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=150, facecolor="white")
     plt.close(fig)
-    Image.open(buf).convert("RGB").save(OUT / f"{name}.webp", "WEBP", quality=90)
+    img = Image.open(buf).convert("RGB")
+    w, h = img.size
+    crop_h = round(h * (1 - LEGEND_BAND))
+    img = img.crop((0, 0, w, crop_h))
+    img.save(OUT / f"{name}.webp", "WEBP", quality=90)
 
 
 def gfield(shape, sigma, seed, m):
@@ -205,6 +216,7 @@ hi_cls = mean_z > np.quantile(mean_z[mask], 0.6)
 lo_cls = mean_z < np.quantile(mean_z[mask], 0.35)
 stab = np.where(unstable, 1, np.where(hi_cls, 3, np.where(lo_cls, 0, 2)))  # 0 basso,1 instabile,2 medio,3 alto
 stab_cols = ["#C9793F", "#B7AFCF", "#E6D9A8", "#3F6B2E"]
+STAB_LABELS = {3: "Sempre alto", 2: "Nella media", 0: "Sempre basso", 1: "Variabile"}
 
 # 2) stagione in corso: NDVI attuale + anomalie rispetto allo storico
 gy, gx = np.mgrid[0:H, 0:W]
@@ -237,13 +249,19 @@ q1, q2 = np.quantile(ndvi_f[target_f & mask_f], [0.33, 0.66])
 dose[target_f] = np.where(ndvi_f[target_f] < q1, 3, np.where(ndvi_f[target_f] < q2, 2, 1))
 
 # ---------------------------------------------------------------- mappa 1: storico
-fig, ax = new_map("1 · Satellite · 6 anni")
-show(ax, stab, mask, cmap=ListedColormap(stab_cols), vmin=-0.5, vmax=3.5)
-outline(ax); decorations(ax)
-legend(fig, "Variabilità storica del vigore",
-       [Patch(fc=c, label=l) for c, l in zip([stab_cols[3], stab_cols[2], stab_cols[0], stab_cols[1]],
-                                             ["Sempre alto", "Nella media", "Sempre basso", "Variabile"])], 4)
-save(fig, "mappa-1-storico")
+def storico_map(isolate=None):
+    # isolate: indice 0-3 in stab_cols da tenere colorato (le altre classi sfumano in grigio).
+    # Genera le varianti che la legenda interattiva mostra cliccando una classe.
+    cols = stab_cols if isolate is None else [c if i == isolate else MUTED for i, c in enumerate(stab_cols)]
+    fig, ax = new_map("1 · Satellite · 6 anni")
+    show(ax, stab, mask, cmap=ListedColormap(cols), vmin=-0.5, vmax=3.5)
+    outline(ax); decorations(ax)
+    return fig
+
+
+save(storico_map(), "mappa-1-storico")
+for idx, label in STAB_LABELS.items():
+    save(storico_map(idx), f"mappa-1-storico-iso-{slug(label)}")
 
 # ---------------------------------------------------------------- mappa 2: campionamento mirato
 # Griglia tradizionale: 1 campione ogni 100 m (circa 1 per ettaro).
@@ -266,39 +284,56 @@ for core in per_parcel:
             continue
         dist = distance_transform_edt(region)
         smart.append((np.array(np.unravel_index(np.argmax(dist), dist.shape)), cls))
-fig, ax = new_map("2 · Suolo · campionamento mirato")
-show(ax, stab, mask, cmap=ListedColormap(stab_cols), vmin=-0.5, vmax=3.5, alpha=0.55)
-outline(ax)
-ax.scatter(grid_pts[:, 0], grid_pts[:, 1], s=16, c="white", edgecolors="#7A7A70", linewidths=0.9, zorder=8)
 sp = np.array([c for c, _ in smart])
-ax.scatter(sp[:, 1] + 0.5, sp[:, 0] + 0.5, s=130, c="white", edgecolors="#B23A2B", linewidths=3, zorder=9)
-decorations(ax)
-fig.text(0.5, 0.135, f"{len(sp)} prelievi mirati invece di {len(grid_pts)} a griglia", ha="center", va="bottom",
-         fontsize=12, fontweight="bold")
-fig.legend(handles=[plt.Line2D([], [], marker="o", ls="", mfc="white", mec="#B23A2B", mew=2.6, ms=11, label="Prelievo mirato"),
-                    plt.Line2D([], [], marker="o", ls="", mfc="white", mec="#7A7A70", mew=1, ms=6, label="Griglia tradizionale (1/ha)")],
-           loc="center", bbox_to_anchor=(0.5, 0.1), ncol=2, frameon=False, fontsize=11, columnspacing=1.5)
-fig.legend(handles=[Patch(fc=stab_cols[i], alpha=0.55, label=l) for i, l in
-                    [(3, "Sempre alto"), (2, "Nella media"), (0, "Sempre basso"), (1, "Variabile")]],
-           loc="center", bbox_to_anchor=(0.5, 0.05), ncol=4, frameon=False, fontsize=10, handlelength=1.2, columnspacing=1.4)
-save(fig, "mappa-2-campionamento")
+
+
+def campionamento_map(isolate_class=None, isolate_marker=None):
+    # isolate_class: indice 0-3 in stab_cols da tenere colorato (le altre sfumano in grigio).
+    # isolate_marker: "mirato" | "griglia" per mostrare solo quel tipo di prelievo.
+    cols = stab_cols if isolate_class is None else [c if i == isolate_class else MUTED for i, c in enumerate(stab_cols)]
+    fig, ax = new_map("2 · Suolo · campionamento mirato")
+    show(ax, stab, mask, cmap=ListedColormap(cols), vmin=-0.5, vmax=3.5, alpha=0.55)
+    outline(ax)
+    if isolate_marker in (None, "griglia"):
+        ax.scatter(grid_pts[:, 0], grid_pts[:, 1], s=16, c="white", edgecolors="#7A7A70", linewidths=0.9, zorder=8)
+    if isolate_marker in (None, "mirato"):
+        ax.scatter(sp[:, 1] + 0.5, sp[:, 0] + 0.5, s=130, c="white", edgecolors="#B23A2B", linewidths=3, zorder=9)
+    decorations(ax)
+    return fig
+
+
+save(campionamento_map(), "mappa-2-campionamento")
+for idx, label in STAB_LABELS.items():
+    save(campionamento_map(isolate_class=idx), f"mappa-2-campionamento-iso-{slug(label)}")
+for key, label in {"mirato": "Prelievo mirato", "griglia": "Griglia tradizionale (1/ha)"}.items():
+    save(campionamento_map(isolate_marker=key), f"mappa-2-campionamento-iso-{slug(label)}")
 
 # ---------------------------------------------------------------- mappa 2: stagione
 ndvi_cmap = LinearSegmentedColormap.from_list("ndvi", ["#B98E5A", "#E6D39A", "#A9C77E", "#4E8A3E", "#15401F"])
-fig, ax = new_map("3 · Satellite · stagione in corso")
-im = show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82)
-target_outline(ax, 2, "#B23A2B", "--", halo=True)
-outline(ax); decorations(ax)
-colorbar(fig, im, "Vigore attuale (NDVI) e aree anomale", "Basso", "Alto", [0.65, 0.70, 0.75, 0.80], "{:.2f}")
-ax.plot([], [], color="#B23A2B", ls="--", lw=2, label="Area da verificare")
-ax.legend(loc="upper right", bbox_to_anchor=(0.9, 0.995), frameon=True, framealpha=0.92, edgecolor="none", fontsize=10)
-save(fig, "mappa-3-stagione")
+
+
+def stagione_map(soglia=None):
+    # soglia: se indicata, evidenzia in rosso i pixel con NDVI attuale sotto quel valore (stesso
+    # dato "ndvi" della mappa base). Genera le varianti che la legenda interattiva in
+    # MapCarousel.tsx mostra passando il cursore sulla scala del vigore.
+    fig, ax = new_map("3 · Satellite · stagione in corso")
+    im = show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82)
+    if soglia is not None:
+        show(ax, np.ones_like(ndvi), mask & (ndvi < soglia), z=5.5,
+             cmap=ListedColormap(["#B23A2B"]), alpha=0.32)
+    target_outline(ax, 2, "#B23A2B", "--", halo=True)
+    outline(ax); decorations(ax)
+    colorbar(fig, im, "Vigore attuale (NDVI) e aree anomale", "Basso", "Alto", [0.65, 0.70, 0.75, 0.80], "{:.2f}")
+    return fig
+
+
+# "Area da verificare" (contorno tratteggiato rosso) è spiegata nella legenda React, non più in un
+# riquadro sovrapposto alla mappa.
+save(stagione_map(), "mappa-3-stagione")
+for soglia in (0.65, 0.70, 0.75, 0.80):
+    save(stagione_map(soglia), f"mappa-3-stagione-soglia-{round(soglia * 100)}")
 
 # ---------------------------------------------------------------- mappa 3: piano di volo
-fig, ax = new_map("4 · Drone · volo mirato")
-show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82, alpha=0.3)
-show(ax, np.ones_like(ndvi), target, z=5, cmap=ListedColormap(["#B23A2B"]), alpha=0.22)
-target_outline(ax, 1.6, "#B23A2B")
 d = np.array([np.cos(ANG), np.sin(ANG)]); nrm = np.array([-np.sin(ANG), np.cos(ANG)])
 lab, n = cc_label(target)
 home = np.array([X[2, 3], Y[2, 3]]) + np.array([-3.0, -3.0])   # a bordo campo, sulla capezzagna
@@ -320,29 +355,53 @@ order, cur, left = [], home, list(range(len(blocks)))
 while left:
     j = min(left, key=lambda i: np.linalg.norm(blocks[i][0][0] - cur))
     order.append(j); left.remove(j); cur = blocks[j][-1][-1]
-cur = home
-for j in order:
-    pts_b = np.array([p for seg in blocks[j] for p in seg])
-    ax.plot([cur[0], pts_b[0, 0]], [cur[1], pts_b[0, 1]], color="#15240D", lw=1.3, ls=(0, (3, 3)), zorder=8)
-    ax.plot(pts_b[:, 0], pts_b[:, 1], color="white", lw=3.6, zorder=8, solid_joinstyle="round")
-    ax.plot(pts_b[:, 0], pts_b[:, 1], color="#15240D", lw=1.7, zorder=9, solid_joinstyle="round")
-    cur = pts_b[-1]
-ax.plot([cur[0], home[0]], [cur[1], home[1]], color="#15240D", lw=1.3, ls=(0, (3, 3)), zorder=8)
-ax.scatter(*home, s=170, marker="s", c="#15240D", edgecolors="white", linewidths=2, zorder=10)
-decorations(ax)
-legend(fig, "Piano di volo del drone",
-       [Patch(fc="#E7B7AE", ec="#B23A2B", label="Area da sorvolare"),
-        plt.Line2D([], [], color="#15240D", lw=2, label="Passate di rilievo"),
-        plt.Line2D([], [], color="#15240D", lw=1.3, ls=(0, (3, 3)), label="Trasferimento"),
-        plt.Line2D([], [], marker="s", ls="", mfc="#15240D", mec="white", ms=10, label="Decollo")], 4)
-save(fig, "mappa-4-volo")
+
+
+def volo_map(isolate=None):
+    # isolate: "area" | "passate" | "trasferimento" | "decollo" (None = mostra tutta la legenda).
+    fig, ax = new_map("4 · Drone · volo mirato")
+    show(ax, ndvi, mask, cmap=ndvi_cmap, vmin=0.62, vmax=0.82, alpha=0.3)
+    if isolate in (None, "area"):
+        show(ax, np.ones_like(ndvi), target, z=5, cmap=ListedColormap(["#B23A2B"]), alpha=0.22)
+        target_outline(ax, 1.6, "#B23A2B")
+    cur = home
+    for j in order:
+        pts_b = np.array([p for seg in blocks[j] for p in seg])
+        if isolate in (None, "trasferimento"):
+            ax.plot([cur[0], pts_b[0, 0]], [cur[1], pts_b[0, 1]], color="#15240D", lw=1.3, ls=(0, (3, 3)), zorder=8)
+        if isolate in (None, "passate"):
+            ax.plot(pts_b[:, 0], pts_b[:, 1], color="white", lw=3.6, zorder=8, solid_joinstyle="round")
+            ax.plot(pts_b[:, 0], pts_b[:, 1], color="#15240D", lw=1.7, zorder=9, solid_joinstyle="round")
+        cur = pts_b[-1]
+    if isolate in (None, "trasferimento"):
+        ax.plot([cur[0], home[0]], [cur[1], home[1]], color="#15240D", lw=1.3, ls=(0, (3, 3)), zorder=8)
+    if isolate in (None, "decollo"):
+        ax.scatter(*home, s=170, marker="s", c="#15240D", edgecolors="white", linewidths=2, zorder=10)
+    decorations(ax)
+    return fig
+
+
+save(volo_map(), "mappa-4-volo")
+VOLO_LABELS = {"area": "Area da sorvolare", "passate": "Passate di rilievo",
+               "trasferimento": "Trasferimento", "decollo": "Decollo"}
+for key, label in VOLO_LABELS.items():
+    save(volo_map(key), f"mappa-4-volo-iso-{slug(label)}")
 
 # ---------------------------------------------------------------- mappa 4: prescrizione
 dose_cols = ["#9DBB86", "#EFE3BF", "#DE9A4C", "#A33A1F"]
-fig, ax = new_map("5 · Drone · biostimolanti")
-show(ax, dose, mask_f, cmap=ListedColormap(dose_cols), vmin=-0.5, vmax=3.5)
-outline(ax); decorations(ax)
-legend(fig, "Distribuzione di biostimolanti a rateo variabile",
-       [Patch(fc=c, label=l) for c, l in zip(dose_cols, ["Dose −25%", "Dose standard", "Dose +25%", "Dose +50%"])], 4)
-save(fig, "mappa-5-biostimolanti")
+DOSE_LABELS = {0: "Dose −25%", 1: "Dose standard", 2: "Dose +25%", 3: "Dose +50%"}
+
+
+def biostim_map(isolate=None):
+    # isolate: indice 0-3 in dose_cols da tenere colorato (le altre classi sfumano in grigio).
+    cols = dose_cols if isolate is None else [c if i == isolate else MUTED for i, c in enumerate(dose_cols)]
+    fig, ax = new_map("5 · Drone · biostimolanti")
+    show(ax, dose, mask_f, cmap=ListedColormap(cols), vmin=-0.5, vmax=3.5)
+    outline(ax); decorations(ax)
+    return fig
+
+
+save(biostim_map(), "mappa-5-biostimolanti")
+for idx, label in DOSE_LABELS.items():
+    save(biostim_map(idx), f"mappa-5-biostimolanti-iso-{slug(label)}")
 print("ok", n, "aree target")
