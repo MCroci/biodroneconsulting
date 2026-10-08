@@ -539,6 +539,50 @@ export default function App() {
         </div>
       </section>
 
+      {/* Sviluppo Rurale Lombardia 2023-2027: comunicazione obbligatoria per i beneficiari FEASR/PSR
+          (Allegato 1 decreto n. 4701 - Linee guida comunicazione, cap. 02 "Sito web e social media") */}
+      <section className="py-16 bg-brand-bg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 lg:p-12">
+            <img
+              src="/fascia-marchi-psr.png"
+              alt="Cofinanziato dall'Unione europea · Repubblica Italiana · PSR Lombardia · Regione Lombardia"
+              className="h-10 sm:h-12 w-auto mb-4"
+            />
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-xl font-heading text-brand-dark mb-3">Sviluppo Rurale Lombardia 2023-2027</h3>
+              <p className="text-gray-600 leading-relaxed">
+                BioDroneConsulting programma voli su mais, soia e pomodoro per rilevare lo stato vegetativo delle colture, campo per campo. Un partenariato tecnico-scientifico trasforma le immagini aeree raccolte dal drone in indicazioni agronomiche concrete, a supporto delle decisioni dell'azienda agricola nella programmazione degli interventi in campo.
+              </p>
+              <p className="text-gray-600 leading-relaxed mt-3">
+                Iniziativa finanziata nell'ambito del Complemento per lo Sviluppo Rurale (CSR) 2023-2027 della Regione Lombardia — Intervento SRG01, Sostegno ai gruppi operativi del PEI AGRI. Sostegno finanziario: 40,70% Unione Europea, 41,51% Stato, 17,79% Regione Lombardia.
+              </p>
+              <p className="text-gray-500 leading-relaxed mt-3 text-sm">
+                Per maggiori informazioni sulle opportunità di finanziamento, visita il sito dedicato al{' '}
+                <a
+                  href="https://psr.regione.lombardia.it"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-accent font-semibold hover:text-brand-dark underline"
+                >
+                  FEASR della Regione Lombardia
+                </a>{' '}
+                e della{' '}
+                <a
+                  href="https://agriculture.ec.europa.eu/common-agricultural-policy/ruraldevelopment_it"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-accent font-semibold hover:text-brand-dark underline"
+                >
+                  Commissione Europea
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-brand-dark text-gray-400 py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
