@@ -410,7 +410,17 @@ export default function App() {
                     <div className="bg-brand-dark/10 p-3 rounded-lg text-brand-dark"><Users className="h-6 w-6" /></div>
                     <div>
                       <h4 className="text-gray-900">Partnership d'Eccellenza</h4>
-                      <p className="text-sm text-gray-600 mt-1">Farm Consulting, UCSC DI.PRO.VE.S, CITIMAP e 6 aziende agricole lombarde.</p>
+                      <p className="text-sm text-gray-600 mt-1">Farm Consulting, UCSC DI.PRO.VE.S, CITIMAP e 8 aziende agricole lombarde.</p>
+                      <ul className="text-xs text-gray-500 mt-2 space-y-0.5 list-disc list-inside">
+                        <li>Società agricola Soldi Di Massimo a Angelo Soldi Società semplice</li>
+                        <li>Facchi Antonio - Francesco - Luigi e Diego Società semplice società agricola</li>
+                        <li>Fedeli Angelo Agostino Marco società agricola S.S.</li>
+                        <li>Cerati S.S. società agricola</li>
+                        <li>Cerri Lorenzo</li>
+                        <li>Fortini Gianenzo</li>
+                        <li>Musonera società agricola S.S. Di f.lli Invernizzi</li>
+                        <li>Fusar Imperatore Franco e Fabio società agricola S.S.</li>
+                      </ul>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-gray-50 flex flex-col items-center gap-4">
@@ -443,7 +453,7 @@ export default function App() {
                     <CheckCircle2 className="h-5 w-5 text-brand-light flex-shrink-0 mt-0.5" />
                     <div>
                       <strong className="block text-gray-900 text-sm">Mappe di Stabilità</strong>
-                      <span className="text-gray-600 text-sm">6 mappe validate per le aziende partner.</span>
+                      <span className="text-gray-600 text-sm">8 mappe validate per le aziende partner.</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
