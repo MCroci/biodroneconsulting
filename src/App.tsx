@@ -424,8 +424,8 @@ export default function App() {
                 <div className="flex items-start gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                   <div className="bg-brand-light/10 p-3 rounded-lg text-brand-light"><MapPin className="h-6 w-6" /></div>
                   <div>
-                    <h4 className="text-gray-900"><CountUp to={50} /> Ettari di Sperimentazione</h4>
-                    <p className="text-sm text-gray-600 mt-1">Campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova su Mais, Riso e Pomodoro.</p>
+                    <h4 className="text-gray-900"><CountUp to={64} /> Ettari di Sperimentazione</h4>
+                    <p className="text-sm text-gray-600 mt-1">Su oltre 550 ettari coltivati dalle aziende coinvolte, 64 saranno dedicati alla sperimentazione del progetto, con campi pilota distribuiti tra Milano, Bergamo, Cremona e Mantova e dedicati a mais, riso e pomodoro.</p>
                   </div>
                 </div>
               </div>
