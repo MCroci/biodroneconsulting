@@ -215,8 +215,8 @@ export default function App() {
                    PEI AGRI SRG01 Lombardia (2026-2028)
                 </div>
                 <h1 className="text-5xl md:text-6xl lg:text-[5rem] font-heading font-normal text-brand-text mb-6 leading-[1.1] tracking-tight">
-                  <span className="block">Il Futuro Vola</span>
-                  <span className="block italic text-brand-light/90">Sui Nostri Campi.</span>
+                  <span className="block">Il futuro vola</span>
+                  <span className="block italic text-brand-light/90">sui nostri campi</span>
                 </h1>
                 <p className="text-lg md:text-xl text-brand-text/80 font-light leading-relaxed mb-10 max-w-lg">
                   Scopri come l'uso dei droni multispettrali sta rivoluzionando l'agricoltura: meno chimica, più precisione, zero sprechi.
