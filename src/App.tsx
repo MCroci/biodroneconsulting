@@ -555,7 +555,7 @@ export default function App() {
                 BioDroneConsulting programma voli su mais, soia e pomodoro per rilevare lo stato vegetativo delle colture, campo per campo. Un partenariato tecnico-scientifico trasforma le immagini aeree raccolte dal drone in indicazioni agronomiche concrete, a supporto delle decisioni dell'azienda agricola nella programmazione degli interventi in campo.
               </p>
               <p className="text-gray-600 leading-relaxed mt-3">
-                Iniziativa finanziata nell'ambito del Complemento per lo Sviluppo Rurale (CSR) 2023-2027 della Regione Lombardia — Intervento SRG01, Sostegno ai gruppi operativi del PEI AGRI. Sostegno finanziario: 40,70% Unione Europea, 41,51% Stato, 17,79% Regione Lombardia.
+                Iniziativa finanziata nell'ambito del Complemento per lo Sviluppo Rurale (CSR) 2023-2027 della Regione Lombardia — Intervento SRG01, Sostegno ai gruppi operativi del PEI AGRI. Importo complessivo di spesa pubblica: 450.000,05 €, di cui 183.150,02 € (40,70%) di cofinanziamento dell'Unione Europea, 186.795,02 € (41,51%) di cofinanziamento nazionale e 80.055,01 € (17,79%) di cofinanziamento regionale.
               </p>
               <p className="text-gray-500 leading-relaxed mt-3 text-sm">
                 Per maggiori informazioni sulle opportunità di finanziamento, visita il sito dedicato al{' '}
