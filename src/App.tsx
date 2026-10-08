@@ -237,11 +237,11 @@ export default function App() {
                 className="relative h-[400px] lg:h-[550px] w-full mt-8 lg:mt-0 mb-10 lg:mb-0"
               >
                 <div className="absolute inset-0 lg:left-12 rounded-3xl overflow-hidden shadow-xl">
-                  <img src="/hero-satellite.jpg" alt="Immagine satellitare Sentinel-2 dei campi attorno al Po, presso Piacenza" className="w-full h-full object-cover" />
+                  <img src="/hero-satellite.jpg" alt="Immagine satellitare dei campi agricoli della pianura lombarda, zona del Parco Agricolo del Moso" className="w-full h-full object-cover" />
                   <span className="absolute top-4 right-4 bg-white/90 backdrop-blur text-brand-dark text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">Satellite</span>
                 </div>
                 <p className="absolute top-full right-0 mt-2 w-[50%] lg:w-[62%] text-right text-[11px] leading-snug text-brand-text/60">
-                  Contiene dati Copernicus Sentinel modificati (2022), elaborati da ESA
+                  Contiene dati Copernicus Sentinel-2 modificati, elaborati dal Copernicus Data Space Ecosystem
                 </p>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
