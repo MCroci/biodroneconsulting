@@ -4,7 +4,7 @@ import {
   Leaf, Sprout, TestTube, TrendingDown, Users, BookOpen,
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
   Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, CheckCircle2,
-  Info, AlertTriangle, Cookie
+  Info, AlertTriangle, Cookie, Bug
 } from 'lucide-react';
 import DroneCursor from './components/DroneCursor';
 import MapCarousel from './components/MapCarousel';
@@ -112,6 +112,7 @@ export default function App() {
 
   const navLinks = [
     { name: 'Il Drone', href: '#drone' },
+    { name: 'Trattamenti', href: '#trattamenti' },
     { name: 'Il Progetto', href: '#progetto' },
     { name: 'Divulgazione', href: '#risultati' },
   ];
@@ -304,6 +305,94 @@ export default function App() {
               </FadeIn>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Trattamenti con il Drone: difesa biologica e biostimolanti (non solo monitoraggio) */}
+      <section id="trattamenti" className="py-24 bg-brand-bg relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-center mb-12">
+              <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Non solo monitoraggio</span>
+              <h2 className="text-3xl md:text-5xl font-heading text-brand-dark mt-2">Trattamenti con il Drone</h2>
+              <div className="w-24 h-1 bg-brand-light mx-auto mt-6 rounded-full"></div>
+              <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">
+                Impieghiamo droni professionali per la distribuzione mirata di insetti utili e biostimolanti, integrando la difesa biologica con il supporto alla nutrizione delle colture.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div className="relative rounded-3xl overflow-hidden shadow-xl mb-12 h-64 md:h-96">
+              <img src="/drone-trattamento-banner.jpg" alt="Drone agricolo in volo durante un trattamento di rilascio su una coltura" className="w-full h-full object-cover" />
+            </div>
+          </FadeIn>
+
+          <FadeIn>
+            <p className="text-gray-600 max-w-4xl mx-auto text-center mb-12">
+              Grazie a sistemi di rilascio dedicati e alla pianificazione dei voli, è possibile distribuire gli organismi utili per il controllo dei fitofagi e applicare prodotti biostimolanti in funzione delle esigenze della coltura e delle fasi di sviluppo. Gli interventi vengono programmati sulla base del monitoraggio in campo e delle finestre agronomiche più appropriate, con l'obiettivo di favorire l'efficienza nutrizionale, sostenere la crescita delle piante e migliorare la risposta agli stress biotici ed abiotici. Una soluzione tecnologica che riduce il transito dei mezzi agricoli e promuove una gestione più precisa e sostenibile delle produzioni, limitando ove possibile il ricorso agli insetticidi chimici.
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <FadeIn delay={0.1}>
+              <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+                <div className="aspect-square overflow-hidden">
+                  <img src="/drone-agras-t100.jpg" alt="DJI Agras T100 in volo durante un trattamento" className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5">
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
+                    <Droplets className="h-4 w-4" /> Biostimolanti
+                  </span>
+                  <h4 className="text-gray-900 mt-1">DJI Agras T100</h4>
+                </div>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+                <div className="aspect-square overflow-hidden">
+                  <img src="/drone-mavic-3m.jpg" alt="DJI Mavic 3M per rilevamenti multispettrali" className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5">
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
+                    <Camera className="h-4 w-4" /> Rilevamenti
+                  </span>
+                  <h4 className="text-gray-900 mt-1">DJI Mavic 3M</h4>
+                </div>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.3}>
+              <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+                <div className="aspect-square overflow-hidden">
+                  <img src="/drone-matrice-400-kit.jpg" alt="DJI Matrice 400 con kit per il rilascio di insetti utili" className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5">
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
+                    <Bug className="h-4 w-4" /> Insetti utili
+                  </span>
+                  <h4 className="text-gray-900 mt-1">DJI Matrice 400</h4>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+
+          {/* Caso concreto: lotta biologica alla piralide del mais */}
+          <FadeIn delay={0.4}>
+            <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                <div className="lg:col-span-5 relative min-h-[260px]">
+                  <img src="/piralide-danno-pupa.jpg" alt="Danno e presenza di pupa di piralide in corrispondenza dell'ascella fogliare del mais" className="absolute inset-0 w-full h-full object-cover" />
+                </div>
+                <div className="lg:col-span-7 p-8 lg:p-12">
+                  <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Caso concreto</span>
+                  <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mt-2 mb-4">Lotta biologica alla piralide del mais</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Un esempio concreto è l'impiego del drone DJI Matrice 400 per il rilascio di <em>Trichogramma spp.</em>, insetti utili impiegati nel controllo biologico della piralide del mais. Sulla base del monitoraggio della coltura e delle previsioni di sviluppo del fitofago, il drone distribuisce le capsule contenenti i parassitoidi secondo un piano di volo prestabilito. Le femmine di Trichogramma parassitizzano le uova della piralide, limitando la nascita delle larve e contribuendo alla riduzione dei danni alla coltura. Una soluzione che integra tecnologia e difesa biologica, favorendo interventi tempestivi e una gestione più sostenibile della coltivazione.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
