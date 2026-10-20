@@ -72,6 +72,63 @@ const Parallax: React.FC<{ children?: React.ReactNode; speed?: number; className
   );
 };
 
+/** Schede dei droni per i trattamenti (riusate sia nella griglia desktop sia nel mazzo mobile). */
+const DRONE_TREATMENT_CARDS = [
+  { src: '/drone-agras-t100.jpg', alt: 'DJI Agras T100 in volo durante un trattamento', icon: Droplets, label: 'Biostimolanti', title: 'DJI Agras T100' },
+  { src: '/drone-mavic-3m.jpg', alt: 'DJI Mavic 3M per rilevamenti multispettrali', icon: Camera, label: 'Rilevamenti', title: 'DJI Mavic 3M' },
+  { src: '/drone-matrice-400-kit.jpg', alt: 'DJI Matrice 400 con kit per il rilascio di insetti utili', icon: Bug, label: 'Insetti utili', title: 'DJI Matrice 400' },
+];
+
+/** Solo mobile: le 3 schede attrezzatura come un mazzo di carte, si tocca per mischiarle. */
+const DroneCardDeck: React.FC = () => {
+  const [order, setOrder] = useState([0, 1, 2]);
+  const shuffle = () => setOrder((prev) => [...prev.slice(1), prev[0]]);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        role="button"
+        aria-label="Tocca per mischiare il mazzo di schede"
+        className="relative w-full max-w-xs aspect-[4/5] cursor-pointer select-none"
+        onClick={shuffle}
+      >
+        {order.map((cardIdx, pos) => {
+          const card = DRONE_TREATMENT_CARDS[cardIdx];
+          return (
+            <motion.div
+              key={cardIdx}
+              className="absolute inset-0 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg flex flex-col"
+              animate={{
+                y: pos * 14,
+                scale: 1 - pos * 0.05,
+                rotate: pos === 0 ? 0 : pos === 1 ? -6 : 6,
+                zIndex: 10 - pos,
+              }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+            >
+              <div className="flex-1 overflow-hidden">
+                <img src={card.src} alt={card.alt} className="w-full h-full object-cover" draggable={false} />
+              </div>
+              <div className="p-5 bg-white">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
+                  <card.icon className="h-4 w-4" /> {card.label}
+                </span>
+                <h4 className="text-gray-900 mt-1">{card.title}</h4>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-2 mt-5">
+        {DRONE_TREATMENT_CARDS.map((_, i) => (
+          <span key={i} className={`h-1.5 rounded-full transition-all ${order[0] === i ? 'w-6 bg-brand-accent' : 'w-1.5 bg-gray-300'}`} />
+        ))}
+      </div>
+      <p className="text-xs text-gray-400 mt-2">Tocca la carta per mischiare il mazzo</p>
+    </div>
+  );
+};
+
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -347,7 +404,8 @@ export default function App() {
             </p>
           </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {/* Schede attrezzatura: griglia statica da desktop, mazzo di carte da mischiare da mobile */}
+          <div className="hidden lg:grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             <FadeIn delay={0.1}>
               <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
                 <div className="aspect-square overflow-hidden">
@@ -388,9 +446,28 @@ export default function App() {
               </div>
             </FadeIn>
           </div>
+          <FadeIn delay={0.1} className="lg:hidden mb-16">
+            <DroneCardDeck />
+          </FadeIn>
 
-          {/* Caso concreto: lotta biologica alla piralide del mais */}
-          <FadeIn delay={0.4}>
+          {/* Caso concreto: lotta biologica alla piralide del mais (da mobile entra con animazione da sinistra) */}
+          <FadeIn delay={0.4} className="hidden lg:block">
+            <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                <div className="lg:col-span-5 relative min-h-[260px]">
+                  <img src="/piralide-danno-pupa.jpg" alt="Danno e presenza di pupa di piralide in corrispondenza dell'ascella fogliare del mais" className="absolute inset-0 w-full h-full object-cover" />
+                </div>
+                <div className="lg:col-span-7 p-8 lg:p-12">
+                  <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Caso concreto · Campagna 2026</span>
+                  <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mt-2 mb-4">Lotta biologica alla piralide del mais</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Nella campagna 2026 abbiamo realizzato un esempio concreto con l'impiego del drone DJI Matrice 400 per il rilascio di <em>Trichogramma spp.</em>, insetti utili impiegati nel controllo biologico della piralide del mais. Sulla base del monitoraggio della coltura e delle previsioni di sviluppo del fitofago, il drone distribuisce le capsule contenenti i parassitoidi secondo un piano di volo prestabilito. Le femmine di Trichogramma parassitizzano le uova della piralide, limitando la nascita delle larve e contribuendo alla riduzione dei danni alla coltura. Una soluzione che integra tecnologia e difesa biologica, favorendo interventi tempestivi e una gestione più sostenibile della coltivazione.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.4} direction="left" className="lg:hidden">
             <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 <div className="lg:col-span-5 relative min-h-[260px]">
