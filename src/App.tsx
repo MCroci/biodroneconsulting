@@ -136,8 +136,20 @@ export default function App() {
     <div className="min-h-screen bg-brand-outer-bg text-brand-text font-body selection:bg-brand-light selection:text-white overflow-x-hidden">
       <DroneCursor />
 
-      {/* Navbar */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
+      {/* Fascia fissa in alto: navbar + loghi Regione Lombardia/UE (comunicazione obbligatoria FEASR/PSR, sempre visibile durante lo scroll) */}
+      <div className="fixed top-0 inset-x-0 z-50">
+        <div className="bg-white border-b border-gray-100 py-1.5">
+          <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center sm:justify-start">
+            <img
+              src="/loghi-regione-lombardia.png"
+              alt="Finanziato dall'Unione europea · Repubblica Italiana · PSR Lombardia · Regione Lombardia"
+              className="h-5 sm:h-6 w-auto"
+            />
+          </div>
+        </div>
+
+        {/* Navbar */}
+        <nav className={`relative w-full transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm py-4' : 'bg-white py-6'}`}>
         <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             
@@ -197,10 +209,11 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+        </nav>
+      </div>
 
       {/* Styled Hero Section Container */}
-      <section className="bg-white w-full pt-32 lg:pt-36 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
+      <section className="bg-white w-full pt-40 lg:pt-44 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
         <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-24">
           <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[75vh] flex items-center px-8 py-16 lg:px-24 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full z-10 relative">
@@ -384,10 +397,10 @@ export default function App() {
                   <img src="/piralide-danno-pupa.jpg" alt="Danno e presenza di pupa di piralide in corrispondenza dell'ascella fogliare del mais" className="absolute inset-0 w-full h-full object-cover" />
                 </div>
                 <div className="lg:col-span-7 p-8 lg:p-12">
-                  <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Caso concreto</span>
+                  <span className="text-brand-accent font-bold tracking-wider uppercase text-sm">Caso concreto · Campagna 2026</span>
                   <h3 className="text-2xl md:text-3xl font-heading text-brand-dark mt-2 mb-4">Lotta biologica alla piralide del mais</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Un esempio concreto è l'impiego del drone DJI Matrice 400 per il rilascio di <em>Trichogramma spp.</em>, insetti utili impiegati nel controllo biologico della piralide del mais. Sulla base del monitoraggio della coltura e delle previsioni di sviluppo del fitofago, il drone distribuisce le capsule contenenti i parassitoidi secondo un piano di volo prestabilito. Le femmine di Trichogramma parassitizzano le uova della piralide, limitando la nascita delle larve e contribuendo alla riduzione dei danni alla coltura. Una soluzione che integra tecnologia e difesa biologica, favorendo interventi tempestivi e una gestione più sostenibile della coltivazione.
+                    Nella campagna 2026 abbiamo realizzato un esempio concreto con l'impiego del drone DJI Matrice 400 per il rilascio di <em>Trichogramma spp.</em>, insetti utili impiegati nel controllo biologico della piralide del mais. Sulla base del monitoraggio della coltura e delle previsioni di sviluppo del fitofago, il drone distribuisce le capsule contenenti i parassitoidi secondo un piano di volo prestabilito. Le femmine di Trichogramma parassitizzano le uova della piralide, limitando la nascita delle larve e contribuendo alla riduzione dei danni alla coltura. Una soluzione che integra tecnologia e difesa biologica, favorendo interventi tempestivi e una gestione più sostenibile della coltivazione.
                   </p>
                 </div>
               </div>
