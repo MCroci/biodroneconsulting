@@ -138,12 +138,12 @@ export default function App() {
 
       {/* Fascia fissa in alto: navbar + loghi Regione Lombardia/UE (comunicazione obbligatoria FEASR/PSR, sempre visibile durante lo scroll) */}
       <div className="fixed top-0 inset-x-0 z-50">
-        <div className="bg-white border-b border-gray-100 py-3">
-          <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 flex justify-start">
+        <div className="bg-white border-b border-gray-100 py-3 lg:py-4">
+          <div className="flex justify-start pl-4 sm:pl-6 lg:pl-8">
             <img
               src="/loghi-regione-lombardia.png"
               alt="Finanziato dall'Unione europea · Repubblica Italiana · PSR Lombardia · Regione Lombardia"
-              className="h-8 sm:h-10 w-auto"
+              className="h-8 sm:h-10 lg:h-16 w-auto"
             />
           </div>
         </div>
@@ -213,7 +213,7 @@ export default function App() {
       </div>
 
       {/* Styled Hero Section Container */}
-      <section className="bg-white w-full pt-44 lg:pt-52 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
+      <section className="bg-white w-full pt-44 lg:pt-60 pb-0 rounded-b-[3rem] lg:rounded-b-[5rem] relative z-10 shadow-sm border-b border-gray-100">
         <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-24">
           <div className="bg-brand-bg rounded-[2rem] lg:rounded-[4rem] w-full min-h-[75vh] flex items-center px-8 py-16 lg:px-24 overflow-hidden relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full z-10 relative">
