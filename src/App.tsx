@@ -139,7 +139,7 @@ export default function App() {
       {/* Fascia fissa in alto: navbar + loghi Regione Lombardia/UE (comunicazione obbligatoria FEASR/PSR, sempre visibile durante lo scroll) */}
       <div className="fixed top-0 inset-x-0 z-50">
         <div className="bg-white border-b border-gray-100 py-3 lg:py-4">
-          <div className="flex justify-start pl-4 sm:pl-6 lg:pl-8">
+          <div className="flex justify-end pr-4 sm:pr-6 lg:pr-8">
             <img
               src="/loghi-regione-lombardia.png"
               alt="Finanziato dall'Unione europea · Repubblica Italiana · PSR Lombardia · Regione Lombardia"
