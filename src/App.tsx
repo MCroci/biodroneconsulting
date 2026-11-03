@@ -394,7 +394,16 @@ export default function App() {
 
           <FadeIn delay={0.1}>
             <div className="relative rounded-3xl overflow-hidden shadow-xl mb-12 h-64 md:h-96">
-              <img src="/drone-trattamento-banner.jpg" alt="Drone agricolo in volo durante un trattamento di rilascio su una coltura" className="w-full h-full object-cover" />
+              <video
+                src="/drone-trattamento-banner.mp4"
+                poster="/drone-trattamento-banner.jpg"
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-label="Drone agricolo in volo durante un trattamento di rilascio su una coltura"
+              />
             </div>
           </FadeIn>
 
