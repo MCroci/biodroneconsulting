@@ -4,7 +4,7 @@ import {
   Leaf, Sprout, TestTube, TrendingDown, Users, BookOpen,
   Newspaper, Mail, ChevronRight, MapPin, Calendar, FileText, ExternalLink, Menu, X,
   Target, BarChart3, Presentation, Navigation, Droplets, Zap, Camera, CheckCircle2,
-  Info, AlertTriangle, Cookie, Bug
+  Info, AlertTriangle, Cookie, Bug, Download
 } from 'lucide-react';
 import DroneCursor from './components/DroneCursor';
 import MapCarousel from './components/MapCarousel';
@@ -177,7 +177,15 @@ export default function App() {
   // Prossimi eventi: aggiungete qui le date reali (vedi il vademecum condiviso).
   // Formato data: "AAAA-MM-GG". L'ordine nell'elenco non conta: vengono ordinati
   // automaticamente e quelli già passati non vengono mostrati.
-  const events: { title: string; date: string; endDate?: string; location?: string; description?: string; link?: string }[] = [
+  const events: { title: string; date: string; endDate?: string; time?: string; location?: string; description?: string; link?: string; posterUrl?: string }[] = [
+    {
+      title: "Campagna mia, sei cara e ti cambierei — Presentazione del progetto BioDroneConsulting",
+      date: "2026-11-27",
+      time: "14:30",
+      location: "Sala Amati – CremonaFiere, Padiglione 1, Cremona",
+      description: "Convegno dedicato all'agricoltura di precisione: come droni, immagini satellitari e sistemi di supporto alle decisioni aiutano le aziende agricole a intervenire solo dove serve, riducendo l'uso di input chimici. Interviene Michele Croci (Università Cattolica del Sacro Cuore).",
+      posterUrl: "/locandina-campagna-mia-27nov2026.pdf",
+    },
     { title: "Mostra Zootecnica Internazionale di Cremona", date: "2026-11-26", endDate: "2026-11-28" },
     // Esempio (rimuovere il commento e compilare per pubblicare un evento):
     // { title: "Fiera Agricola SIA", date: "2026-11-05", location: "Verona Fiere", description: "Demo dal vivo del drone in campo con il team CITIMAP.", link: "https://example.com" },
@@ -889,7 +897,9 @@ export default function App() {
                         </div>
                         <div className="flex-1">
                           <h4 className="text-lg text-gray-900">{event.title}</h4>
-                          <p className="text-sm text-gray-500 mt-1">{dateRangeLabel}</p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {dateRangeLabel}{event.time && ` · ore ${event.time}`}
+                          </p>
                           {event.location && (
                             <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                               <MapPin className="h-3.5 w-3.5" /> {event.location}
@@ -898,11 +908,18 @@ export default function App() {
                           {event.description && (
                             <p className="text-gray-600 mt-2">{event.description}</p>
                           )}
-                          {event.link && (
-                            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark mt-3">
-                              Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
-                            </a>
-                          )}
+                          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
+                            {event.link && (
+                              <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center font-bold text-brand-dark">
+                                Maggiori informazioni <ChevronRight className="h-4 w-4 ml-1" />
+                              </a>
+                            )}
+                            {event.posterUrl && (
+                              <a href={event.posterUrl} target="_blank" rel="noopener noreferrer" download className="inline-flex items-center font-bold text-brand-accent">
+                                <Download className="h-4 w-4 mr-1.5" /> Scarica la locandina
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
