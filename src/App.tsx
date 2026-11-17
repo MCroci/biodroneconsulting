@@ -727,63 +727,44 @@ export default function App() {
       {/* Contatti */}
       <section id="contatti" className="py-24 bg-brand-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
-            <div className="grid grid-cols-1 lg:grid-cols-2">
-              <div className="p-10 lg:p-16 bg-brand-dark text-white flex flex-col justify-center relative overflow-hidden">
-                <Parallax speed={0.25} className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></Parallax>
-                
-                <h2 className="text-3xl md:text-4xl font-heading mb-6 relative z-10">Resta Aggiornato</h2>
-                <p className="text-gray-300 mb-10 text-lg relative z-10">
-                  Sei un agricoltore o un consulente? Iscriviti per ricevere i materiali divulgativi e gli inviti alle prove in campo con i droni.
-                </p>
-                
-                <div className="space-y-8 relative z-10">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg">
-                      <Users className="h-6 w-6 text-brand-light" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg">Coordinamento</h4>
-                      <p className="text-gray-400">Farm Consulting srl</p>
-                    </div>
+          <div className="bg-brand-dark text-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 relative">
+            <Parallax speed={0.25} className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></Parallax>
+            <Parallax speed={0.15} className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full blur-3xl"></Parallax>
+
+            <div className="relative z-10 px-8 py-16 lg:px-20 lg:py-20 text-center max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-heading mb-6">Resta Aggiornato</h2>
+              <p className="text-gray-300 text-lg mb-12">
+                Sei un agricoltore o un consulente? Scrivici per ricevere i materiali divulgativi e gli inviti alle prove in campo con i droni.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left max-w-xl mx-auto mb-12">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <Users className="h-6 w-6 text-brand-light" />
                   </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg">
-                      <Mail className="h-6 w-6 text-brand-light" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg">Email Progetto</h4>
-                      <a href="mailto:info@citimap.it" className="text-gray-400 hover:text-white transition-colors">info@citimap.it</a>
-                    </div>
+                  <div>
+                    <h4 className="text-lg">Coordinamento</h4>
+                    <p className="text-gray-400">Farm Consulting srl</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <Mail className="h-6 w-6 text-brand-light" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg">Email Progetto</h4>
+                    <a href="mailto:info@citimap.it" className="text-gray-400 hover:text-white transition-colors">info@citimap.it</a>
                   </div>
                 </div>
               </div>
-              
-              <div className="p-10 lg:p-16">
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-2">Nome e Cognome</label>
-                    <input type="text" id="name" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-light focus:border-transparent outline-none transition-all" placeholder="Es. Mario Rossi" />
-                  </div>
-                  <div>
-                    <label htmlFor="role" className="block text-sm font-bold text-gray-700 mb-2">Qualifica</label>
-                    <select id="role" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-light focus:border-transparent outline-none transition-all">
-                      <option>Agricoltore</option>
-                      <option>Consulente Agronomico</option>
-                      <option>Ricercatore</option>
-                      <option>Altro</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">Email</label>
-                    <input type="email" id="email" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-light focus:border-transparent outline-none transition-all" placeholder="mario@example.com" />
-                  </div>
-                  <button type="submit" className="w-full bg-brand-accent hover:bg-brand-dark text-white font-bold py-4 px-4 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
-                    Richiedi Informazioni
-                  </button>
-                </form>
-              </div>
+
+              <a
+                href="mailto:info@citimap.it"
+                className="inline-flex items-center gap-2 bg-brand-accent hover:bg-white hover:text-brand-dark text-white font-bold py-4 px-8 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                <Mail className="h-5 w-5" /> Scrivici via Email
+              </a>
             </div>
           </div>
         </div>
