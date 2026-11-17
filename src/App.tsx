@@ -754,7 +754,7 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="text-lg">Email Progetto</h4>
-                      <a href="mailto:info@biodroneconsulting.it" className="text-gray-400 hover:text-white transition-colors">info@biodroneconsulting.it</a>
+                      <a href="mailto:info@citimap.it" className="text-gray-400 hover:text-white transition-colors">info@citimap.it</a>
                     </div>
                   </div>
                 </div>
